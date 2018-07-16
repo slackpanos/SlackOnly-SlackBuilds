@@ -1,0 +1,80 @@
+#!/bin/sh
+
+# Build script for scala
+
+# Written by Matthias Diehn Ingesman (matthias@pf-c.dk)
+# Public domain.
+# Updated by Andre Barboza <bmg.andre@gmail.com>
+
+PRGNAM=scala
+VERSION=${VERSION:-2.12.3}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_SBo}
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i486 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+if [ "$ARCH" = "x86_64" ]; then
+  LIBDIRSUFFIX="64"
+else
+  LIBDIRSUFFIX=""
+fi
+
+set -e
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $PRGNAM-$VERSION
+tar xvf $CWD/$PRGNAM-$VERSION.tgz
+cd $PRGNAM-$VERSION
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+  -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+
+mkdir -p $PKG/usr/lib$LIBDIRSUFFIX/$PRGNAM $PKG/usr/{bin,man,doc}
+mv $TMP/$PRGNAM-$VERSION/{bin,lib} $PKG/usr/lib$LIBDIRSUFFIX/$PRGNAM
+(
+  cd $PKG/usr/bin
+  ln -s ../lib$LIBDIRSUFFIX/$PRGNAM/bin/fsc
+  ln -s ../lib$LIBDIRSUFFIX/$PRGNAM/bin/scala
+  ln -s ../lib$LIBDIRSUFFIX/$PRGNAM/bin/scalac
+  ln -s ../lib$LIBDIRSUFFIX/$PRGNAM/bin/scalap
+  ln -s ../lib$LIBDIRSUFFIX/$PRGNAM/bin/scaladoc
+)
+rm $PKG/usr/lib$LIBDIRSUFFIX/$PRGNAM/bin/*.bat
+mv $TMP/$PRGNAM-$VERSION/man $PKG/usr/
+
+# No need to install these with a .new extension
+mkdir -p $PKG/etc/profile.d
+sed "s%@LIBDIR@%/usr/lib$LIBDIRSUFFIX%" $CWD/profile.d/scala.sh > \
+    $PKG/etc/profile.d/scala.sh
+sed "s%@LIBDIR@%/usr/lib$LIBDIRSUFFIX%" $CWD/profile.d/scala.csh > \
+    $PKG/etc/profile.d/scala.csh
+chmod 0755 $PKG/etc/profile.d/*
+
+find $PKG/usr/man -type f -exec gzip -9 {} \;
+for i in $( find $PKG/usr/man -type l ) ; do ln -s $( readlink $i ).gz $i.gz ; rm $i ; done
+
+mv $TMP/$PRGNAM-$VERSION/doc/ $PKG/usr/doc/$PRGNAM-$VERSION/
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+cat $CWD/slack-required > $PKG/install/slack-required
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}

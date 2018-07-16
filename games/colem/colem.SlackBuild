@@ -1,0 +1,219 @@
+#!/bin/sh
+
+# Slackware build script for colem
+
+# Written by B. Watson (yalhcru@gmail.com)
+
+# Licensed under the WTFPL. See http://www.wtfpl.net/txt/copying/ for details.
+
+# 20180619 bkw: updated for 4.6.
+
+# 20171218 bkw: updated for 4.2.
+# - upstream started using PulseAudio, but I want to be able to build
+#   with or without it, so added PULSE=no option.
+
+# 20170819 bkw:
+# - updated for 4.1. according to upstream's docs, the only changes from
+#   4.0 to 4.1 are for windows, so don't expect any new features here.
+
+# 20170627 bkw:
+# - updated for 4.0
+# - rework rom_path.diff, so this script can't build 3.8 any more
+# - update man page, add new -4x3 option
+
+# 20161017 bkw:
+# - updated for 3.8
+# - updated man page with new 3.8 options
+
+# 20160729 bkw:
+# - updated for 3.7
+# - rom_path.diff now handles filenames longer than 20 characters.
+
+# 20150506 bkw:
+# - updated for 3.3. Lots of little changes, meaning the script
+#   won't work for 2.9 any more.
+# - stop the CRLF madness, extract with 'unzip -aa' and get rid of
+#   the carriage returns in rom_path.diff.
+# - get rid of POD warnings when making man page.
+
+# 20140825 bkw:
+# - updated for 2.9
+# - include icon in slackbuild dir (upstream removed it from src tarball)
+# - use ColEm.html from the source (upstream includes it now)
+# - get rid of DISPLAY_BPP stuff, bpp is now detected at runtime,
+#   tested same binary on 16bpp and 32bpp, doubt anyone still uses 8bpp
+# - host source myself, since upstream doesn't keep old releases
+# - convert man page to .pod, for easier editing
+# - install binary in /usr/games, man page in section 6
+# - don't unzip the system ROM to $CWD (it might be read-only)
+# - support ROM images with alternate name os7.rom
+# - clean up README formatting, get rid of bpp stuff, mention OSS audio
+# - add a generic-icon to colem.xml, at least in XFCE this makes .col
+#   files show up with the colem icon.
+# - improve the .desktop file:
+#   + don't display in the start menu (since a ROM argument is required)
+#   + auto-associate with colecovision ROMs (as defined in colem.xml)
+#   + run "aoss colem" to get audio working on a stock Slack 14.1 system
+#     with OSS modules disabled by default.
+
+PRGNAM=colem
+VERSION=${VERSION:-4.6}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_SBo}
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i586 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+# Since we have to set endianness at compile-time, included a few
+# extra ARCHes here (only i586 and x86_64 are actually tested, you're
+# on your own with the others)
+# alphaslack and armedslack are little-endian, caught by the default case.
+if [ "$ARCH" = "i586" ]; then
+  SLKCFLAGS="-O2 -march=i586 -mtune=i686"
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+elif [ "$ARCH" = "s390" ]; then
+  SLKCFLAGS="-O2"
+  BIGENDIAN=yes
+elif [ "$ARCH" = "sparc" ]; then
+  SLKCFLAGS="-O2"
+  BIGENDIAN=yes
+elif [ "$ARCH" = "powerpc" ]; then
+  SLKCFLAGS="-O2"
+  BIGENDIAN=yes
+else
+  SLKCFLAGS="-O2"
+fi
+
+set -e
+
+ZIPNAME="ColEm"
+ZIPVER=${VERSION//./}
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $PRGNAM-$VERSION
+mkdir $PRGNAM-$VERSION
+cd $PRGNAM-$VERSION
+unzip -aa $CWD/$ZIPNAME$ZIPVER-Source.zip
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+ -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+
+sed -i "s/-O2/$SLKCFLAGS/" EMULib/Rules.gcc
+
+# Make the emulator look in /usr/share/colem and ~/.colem for the
+# system ROMs, as well as the current directory. Without this, it's
+# quite annoying to use colem from either the command line or KDE.
+patch -p1 < $CWD/rom_path.diff
+
+# Don't lie and say we support .zip files. There's no code to implement it,
+# at least not in the *nix port.
+sed -i 's,and PKZIPped ,,' ColEm/Help.h ColEm/ColEm.html
+
+# Allow optional building without pulse.
+if [ "${PULSE:-yes}" = "no" ]; then
+  sed -i \
+      -e 's,-DPULSE_AUDIO,,' \
+      -e 's,-lpulse-simple,,' \
+      EMULib/Rules.Unix
+fi
+
+cd $ZIPNAME/Unix
+
+# ColEm.html claims that -DGIFLIB makes the F10 key save a GIF snapshot,
+# but it's not actually implemented in ColEm-2.9. In 2.6 it was implemented
+# only for MS-DOS.
+#sed -i "/^DEFINES/s,-DCOLEM,& -DGIFLIB," Makefile
+
+# I have no idea why 3.3 suddenly defaults to 16-bit colordepth. Does
+# anyone still use less than 24-bit, this century? Getting rid of
+# -DBPP32 gives us a binary that works in 16 and 32 bit depth.
+sed -i "/^DEFINES/s,-DBPP..,," Makefile
+
+# If PNG support actually *did* anything, this is how we'd enable it:
+#sed -i "/^DEFINES/s,-DCOLEM,& -DLIBPNG," Makefile
+#sed -i "/^LIBS/s,=,& -lpng," ../../EMULib/Rules.gcc
+
+# Allow building on big-endian platforms (such as s390)
+if [ "${BIGENDIAN:-no}" != "no" ]; then
+  sed -i "/^DEFINES/s/-DLSB_FIRST/-DMSB_FIRST/" Makefile
+fi
+
+# Fix linking on ColEm-3.3 (same .o file given twice in link command)
+sed -i '/^RECORD/d' ../../EMULib/Rules.gcc
+
+make
+
+# no 'make install', do it manually.
+mkdir -p $PKG/usr/games
+install -s -m0755 -oroot -groot $PRGNAM $PKG/usr/games
+
+# Man page written by script author.
+mkdir -p $PKG/usr/man/man6
+gzip -9c < $CWD/$PRGNAM.6 > $PKG/usr/man/man6/$PRGNAM.6.gz
+
+# Icon used to be distributed with the colem 2.6 source, as
+# Maemo/Package/colem-64x64.png
+mkdir -p $PKG/usr/share/pixmaps
+cat $CWD/$PRGNAM.png > $PKG/usr/share/pixmaps/$PRGNAM.png
+
+# .desktop file and mime .xml file originally taken from ColEm-Maemo
+# sources and modified to get rid of the Maemo-specific stuff.
+mkdir -p $PKG/usr/share/applications
+cat $CWD/$PRGNAM.desktop > $PKG/usr/share/applications/$PRGNAM.desktop
+if [ "${PULSE:-yes}" = "no" ]; then
+  sed -i 's,^Exec=,&aoss ,' $PKG/usr/share/applications/$PRGNAM.desktop
+fi
+
+mkdir -p $PKG/usr/share/mime/packages
+cat $CWD/$PRGNAM.xml > $PKG/usr/share/mime/packages/$PRGNAM.xml
+
+# The ROM directory. Included even if there's no ROM in the package.
+mkdir -p $PKG/usr/share/$PRGNAM
+
+# Look for zipped ROM images and unzip them.
+if [ -e $CWD/coleco.zip ]; then
+  unzip -o $CWD/coleco.zip
+elif [ -e $CWD/COLECO.ZIP ]; then
+  unzip -o $CWD/COLECO.ZIP
+fi
+
+# Look for non-zipped ROM images, either unzipped above or in $CWD.
+for i in coleco.rom COLECO.ROM os7.rom OS7.ROM; do
+  [ -e $i ] && ROM=$i
+  [ -e $CWD/$i ] && ROM=$CWD/$i
+done
+
+# If we found a ROM image, include it in the package.
+[ -n "$ROM" ] && cat $ROM > $PKG/usr/share/$PRGNAM/coleco.rom
+
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+cat $CWD/README > $PKG/usr/doc/$PRGNAM-$VERSION/README
+
+# HTML doc now included in the source tarball (didn't used to be).
+cat ../$ZIPNAME.html > $PKG/usr/doc/$PRGNAM-$VERSION/$ZIPNAME.html
+
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+cat $CWD/doinst.sh > $PKG/install/doinst.sh
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}

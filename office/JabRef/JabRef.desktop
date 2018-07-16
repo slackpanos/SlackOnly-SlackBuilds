@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Exec=JabRef
+Name=JabRef
+GenericName=JabRef
+Icon=JabRef
+StartupNotify=true
+Categories=Office;

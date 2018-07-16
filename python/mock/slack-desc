@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.
+# Line up the first '|' above the ':' following the base package name, and
+# the '|' on the right side marks the last column you can put a character in.
+# You must make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':' except on otherwise blank lines.
+
+    |-----handy-ruler------------------------------------------------------|
+mock: mock (unit test library for Python 2)
+mock:
+mock: mock is a library for testing in Python 2. It allows you to replace
+mock: parts of your system under test with mock objects and make assertions
+mock: about how they have been used.
+mock:
+mock: IMPORTANT: For Python3 you do not need this module. Please use the
+mock: standard library instead (unittest.mock). This package contains a
+mock: rolling backport of the standard library compatible with Python 2.7.
+mock:
+mock:

@@ -1,0 +1,134 @@
+#!/bin/sh
+
+# Slackware build script for chocolate-doom
+
+# Written by B. Watson (yalhcru@gmail.com)
+
+# Licensed under the WTFPL. See http://www.wtfpl.net/txt/copying/ for details.
+
+# 20180101 bkw:
+# - Update for v3.0.0. Building 2.3.0 still works, if someone needs it.
+
+# 20170228 bkw:
+# - Allow building 3.0.0-beta1 (but VERSION is still 2.3.0, and is
+#   still built the same, so BUILD is still 1). See BETA.txt.
+
+# 20170111 bkw:
+# - update for v2.3.0
+# - use upstream's .desktop files for heretic/hexen/strife, now that
+#   they're provided
+# - use symlinks for the *-setup binaries, since they're identical
+# - include a few missing docs (AUTHORS, COPYING, etc)
+# - get rid of no-longer-needed disable_windres.diff
+# - update README and slack-desc
+cat $CWD/slack-required > $PKG/install/slack-required
+
+PRGNAM=chocolate-doom
+VERSION=${VERSION:-3.0.0}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_SBo}
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i586 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+if [ "$ARCH" = "i586" ]; then
+  SLKCFLAGS="-O2 -march=i586 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+  LIBDIRSUFFIX="64"
+else
+  SLKCFLAGS="-O2"
+  LIBDIRSUFFIX=""
+fi
+
+set -e
+
+# Beta versions have a - in the filename, but Slackware needs version
+# numbers with no - in them. If the user wants to build 3.0.0-beta1,
+# he needs to set VERSION=3.0.0_beta1 and the script will figure out
+# the filename.
+case "$VERSION" in
+  *_*) REALVER=${VERSION//_/-} ;;
+  *)   REALVER=${VERSION}      ;;
+esac
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $PRGNAM-$REALVER $PRGNAM-$PRGNAM-$REALVER
+tar xvf $CWD/$PRGNAM-$REALVER.tar.gz || tar xvf $CWD/$PRGNAM-$PRGNAM-$REALVER.tar.gz
+cd $PRGNAM-$REALVER || cd $PRGNAM-$PRGNAM-$REALVER
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 -o -perm 511 \) \
+ -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
+ -exec chmod 644 {} \;
+
+[ -x configure ] || sh autogen.sh
+
+# NB: Upstream uses --docdir in a weird way: docs for chocolate-doom
+# go in $docdir, the others go in e.g. "$docdir/../chocolate-hexen/".
+CFLAGS="$SLKCFLAGS" \
+CXXFLAGS="$SLKCFLAGS" \
+./configure \
+  --bindir=/usr/games \
+  --prefix=/usr \
+  --libdir=/usr/lib${LIBDIRSUFFIX} \
+  --sysconfdir=/etc \
+  --localstatedir=/var \
+  --mandir=/usr/man \
+  --docdir=/usr/doc/$PRGNAM-$VERSION/$PRGNAM \
+  --build=$ARCH-slackware-linux
+
+make
+make install DESTDIR=$PKG
+
+# install-strip fails to strip the *-setup binaries.
+strip $PKG/usr/games/*
+
+# No symlinks in /usr/man (we'll create some later though)
+gzip -9 $PKG/usr/man/man?/*
+
+# Move icons to standard Slackware pixmap icon dir:
+mv $PKG/usr/share/icons $PKG/usr/share/pixmaps
+
+# 2.3.0 has a single chocolate-setup binary, which it installs 4 copies
+# of with different names, and it uses the names to decide which game
+# to configure. Better done with symlinks. Plus make links for the man
+# pages. Note that running chocolate-setup lets you pick which game
+# you want to configure, so strictly speaking these extra symlinks are
+# unneeded. Also, upstream only ships one .desktop file for the setup,
+# I'm leaving that as-is.
+cp $PKG/usr/games/$PRGNAM-setup $PKG/usr/games/chocolate-setup
+for exe in $PKG/usr/games/chocolate-*-setup; do
+  man=$PKG/usr/man/man6/$( basename $exe ).6.gz
+  rm -f $exe $man
+  ln -s chocolate-setup $exe
+  ln -s chocolate-setup.6.gz $man
+done
+
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+
+mkdir -p $PKG/install
+cp -a HACKING.md TODO.md AUTHORS COPYING $PKG/usr/doc/$PRGNAM-$VERSION
+cat $CWD/slack-desc > $PKG/install/slack-desc
+cat $CWD/slack-required > $PKG/install/slack-required
+cat $CWD/doinst.sh > $PKG/install/doinst.sh
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}

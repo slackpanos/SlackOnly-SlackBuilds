@@ -1,0 +1,7 @@
+aria2 is a lightweight multi-protocol & multi-source, cross platform
+download utility operated in command-line.
+It supports HTTP/HTTPS, FTP, SFTP, BitTorrent and Metalink.
+
+To use OpenSSL and Expat rather than GnuTLS and libxml2 run the
+script as follows:
+  XML="libexpat" HTTPS="openssl" ./aria2.SlackBuild

@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.
+# Line up the first '|' above the ':' following the base package name, and
+# the '|' on the right side marks the last column you can put a character in.
+# You must make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':' except on otherwise blank lines.
+
+    |-----handy-ruler------------------------------------------------------|
+proj: proj (Cartograpic projection procedures)
+proj:
+proj: PROJ is a generic coordinate transformation software, that transforms
+proj: coordinates from one coordinate reference system (CRS) to another.
+proj: This includes cartographic projections as well as geodetic
+proj: transformations.
+proj:
+proj:
+proj:
+proj:
+proj:

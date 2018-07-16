@@ -1,0 +1,12 @@
+ctemplate
+gdal
+jdk
+libantlr3c
+lua
+mysql-connector-c++
+paramiko
+pexpect
+tinyxml
+unixODBC
+vsqlite++
+wxPython

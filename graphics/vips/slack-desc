@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.
+# Line up the first '|' above the ':' following the base package name, and
+# the '|' on the right side marks the last column you can put a character in.
+# You must make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':' except on otherwise blank lines.
+
+    |-----handy-ruler------------------------------------------------------|
+vips: vips (Free Image Processing System)
+vips:
+vips: VIPS is a free image processing system. It includes a range of
+vips: filters, arithmetic operations, colour processing, histograms,
+vips: and geometric transforms. It supports ten pixel formats, from
+vips: 8-bit unsigned int to 128-bit complex. As well as the usual JPEG,
+vips: TIFF, PNG and WebP images, it also supports scientific formats like
+vips: FITS, OpenEXR, Matlab, Analyze, PFM, Radiance, OpenSlide and DICOM
+vips: (via libMagick).
+vips:
+vips: http://www.vips.ecs.soton.ac.uk/index.php?title=VIPS

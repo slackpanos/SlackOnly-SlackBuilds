@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Exec=env SWT_GTK3=0 eclipse-jee
+Name=Eclipse Java EE
+GenericName=Eclipse IDE for Java EE Developers
+Icon=eclipse-jee
+StartupNotify=true
+Categories=Qt;KDE;GNOME;Development;GTK;

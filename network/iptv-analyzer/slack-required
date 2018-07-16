@@ -1,0 +1,7 @@
+perl-Config-File
+perl-Data-Compare
+perl-Log-Dispatch
+perl-Log-Log4perl
+perl-Net-SNMP
+perl-Proc-Daemon
+perl-Proc-PID-File

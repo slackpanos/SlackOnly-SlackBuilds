@@ -1,0 +1,70 @@
+#!/bin/sh
+#
+# /etc/rc.d/rc.vnstat - Start/stop/restart the vndstat  daemon.
+# To make vnstat start automatically at boot, make this
+# file executable: chmod 0755 /etc/rc.d/rc.vnstat
+#
+
+# Modified by Mario Preksavec <mario@slackware.hr>
+
+CONFIGFILE=/etc/vnstat.conf
+PIDFILE=/var/run/vnstat.pid
+DAEMON=vnstatd
+
+vnstat_start() {
+  if [ -e $PIDFILE -a -n "$(pidof $DAEMON)" ]; then
+    echo "vnstatd is already running with pid $(cat $PIDFILE)"
+  elif [ -x /usr/sbin/vnstatd -a -r $CONFIGFILE ]; then
+    echo "Starting the vnstat daemon..."
+    /usr/sbin/vnstatd --config $CONFIGFILE --daemon
+  fi
+}
+
+vnstat_stop() {
+  echo -n "Stopping the vnstat daemon..."
+  if [ -r $PIDFILE ]; then
+    kill $(cat $PIDFILE)
+    sleep 2
+    if [ -e "$PIDFILE" ]; then
+      rm $PIDFILE
+    fi
+    echo "Done"
+  else
+    killall $DAEMON
+    echo "Done"
+  fi
+}
+
+vnstat_status() {
+  if [ -e $PIDFILE -a -n "$(pidof $DAEMON)" ]; then
+    echo "vnstat daemon is running with pid $(cat $PIDFILE)"
+  else
+    echo "vnstat daemon is not running."
+  fi
+}
+
+vnstat_restart() {
+  echo "restarting the vnstart daemon..."
+  vnstat_stop
+  sleep 2
+  vnstat_start
+}
+
+case "$1" in
+  'start')
+    vnstat_start
+    ;;
+  'stop')
+    vnstat_stop
+    ;;
+  'restart'|'reload')
+    vnstat_restart
+    ;;
+  'status')
+    vnstat_status
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart|reload|status}"
+    exit 1
+    ;;
+esac

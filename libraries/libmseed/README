@@ -1,0 +1,9 @@
+libmseed (C library framework for manipulating SEED data records)
+
+The Mini-SEED library provides a framework for manipulation of SEED
+data records including the unpacking and packing of data records.
+Functionality is also included for managing waveform data as continuous
+traces.
+
+The library should work in Linux, BSD (and derivatives like macOS),
+Solaris and Win32 environments.

@@ -1,0 +1,143 @@
+#!/bin/sh
+
+# Slackware build script for MakeMKV
+
+# Copyright 2018 T3slider <t3slider@gmail.com>
+# All rights reserved.
+#
+# Redistribution and use of this script, with or without modification, is
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE AUTHOR "AS IS" AND ANY EXPRESS OR IMPLIED
+#  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+#  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO
+#  EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+#  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+#  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+#  OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+#  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+#  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+#  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+PRGNAM=makemkv
+VERSION=${VERSION:-1.12.2}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_SBo}
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i586 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+if [ "$ARCH" = "i586" ]; then
+  SLKCFLAGS="-O2 -march=i586 -mtune=i686"
+  ARCHDIR=i386
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  ARCHDIR=i386
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  # -fPIC was causing segfaults...
+  SLKCFLAGS="-O2"
+  ARCHDIR=amd64
+  LIBDIRSUFFIX="64"
+else
+  SLKCFLAGS="-O2"
+  ARCHDIR=i386
+  LIBDIRSUFFIX=""
+fi
+
+# Note: MakeMKV now includes a mips32 binary, but since there is no official
+# MIPS Slackware port I'm ignoring it unless someone complains. Still no ARM
+# version.
+
+# Spoof libaacs and libbdplus? (This will override real libaacs.so.0 and
+# libbdplus.so.0 upon package installation if they are present! If you want
+# to spoof this, you should ensure those packages are not installed!)
+FAKELIBS=${FAKELIBS:-no}
+
+set -e
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+# Build the open source component first...
+rm -rf ${PRGNAM}-oss-${VERSION}
+tar xvf $CWD/${PRGNAM}-oss-${VERSION}.tar.gz
+cd ${PRGNAM}-oss-${VERSION}
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+  -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+
+CFLAGS="$SLKCFLAGS" \
+CXXFLAGS="$SLKCFLAGS" \
+./configure \
+  --prefix=/usr \
+  --libdir=/usr/lib${LIBDIRSUFFIX} \
+  --sysconfdir=/etc \
+  --localstatedir=/var \
+  --mandir=/usr/man \
+  --docdir=/usr/doc/$PRGNAM-$VERSION \
+  --build=$ARCH-slackware-linux
+
+make
+make install DESTDIR=$PKG
+
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+cp -a License.txt $PKG/usr/doc/$PRGNAM-$VERSION
+
+# Now extract/copy the closed source component...
+cd $TMP
+rm -rf ${PRGNAM}-bin-${VERSION}
+tar xvf $CWD/${PRGNAM}-bin-${VERSION}.tar.gz
+cd ${PRGNAM}-bin-${VERSION}
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+  -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+
+# The makefile now supports DESTDIR so it's easier to use it. This is just
+# removing the mandatory interactive EULA agreement which might confuse
+# SlackBuild users (check the README which tells you to read the EULA anyway...)
+sed -i "s/^\(install:\).*/\1/" Makefile
+
+# We will not leave CPU detection up to the makefile here just in case...
+make install ARCH=$ARCHDIR ARCH_OK=1 DESTDIR=$PKG
+
+find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
+  | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
+
+cp -a src/eula_en_linux.txt $PKG/usr/doc/$PRGNAM-$VERSION
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+cat $CWD/README.issues > $PKG/usr/doc/$PRGNAM-$VERSION/README.issues
+
+if [ "$FAKELIBS" != "no" ]; then
+    cd $PKG/usr/lib${LIBDIRSUFFIX}
+    ln -s libmmbd.so.0 libaacs.so.0
+    ln -s libmmbd.so.0 libbdplus.so.0
+fi
+
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+cat $CWD/slack-required > $PKG/install/slack-required
+cat $CWD/doinst.sh > $PKG/install/doinst.sh
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}

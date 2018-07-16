@@ -1,0 +1,19 @@
+IP2Location C library enables the user to find the country, region,
+city, coordinates, zip code, time zone, ISP, domain name, connection
+type, area code, weather, MCC, MNC, mobile brand name, elevation and
+usage type that any IP address or hostname originates from. It has
+been optimized for speed and memory utilization. Developers can use
+the API to query all IP2Location binary databases for IPv4 and
+IPv6 address.
+
+It contains the IP-COUNTRY BIN databases (IPv4 and IPv6) which
+consists of IP address blocks as keys and countries as
+values. Developers can download other sample databases to evaluate
+other features such as region, city, latitude, longitude, zip code,
+ISP, domain name, connection, area code, weather code, mobile network,
+elevation, and usage type code using the same C library.
+
+To install the included IP-COUNTRY BIN databases pass DB=yes to
+the slackbuild as
+
+   DB=yes ./ip2location-c.SlackBuild

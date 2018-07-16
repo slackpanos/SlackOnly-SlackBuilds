@@ -1,0 +1,131 @@
+#!/bin/sh
+
+# Copyright 2007 by ktabic (rdc@ktabic.co.uk)
+#   Permission to use, copy, modify, and distribute this software for
+#   any purpose with or without fee is hereby granted, provided that
+#   the above copyright notice and this permission notice appear in all
+#   copies.
+#
+#   THIS SOFTWARE IS PROVIDED ``AS IS'' AND ANY EXPRESSED OR IMPLIED
+#   WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+#   MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
+#   IN NO EVENT SHALL THE AUTHORS AND COPYRIGHT HOLDERS AND THEIR
+#   CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+#   SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+#   LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF
+#   USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND
+#   ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+#   OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT
+#   OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
+#   SUCH DAMAGE.
+# ---------------------------------------------------------------------------
+
+# Modified by the SlackBuilds.org Project
+
+# modified again 20140210 bkw:
+# - took over maintenance
+# - update for v2.13
+# - derive SRCVER from VERSION
+# - 'make install-strip' instead of boilerplate find/strip
+# - get rid of static lib
+# - simplify man page gzipping, make argtable.3.gz a symlink to
+#   argtable2.3.gz, since they're identical
+# - don't need full API docs in HTML, PDF, *and* PS, install only
+#   HTML by default, add env vars for PS and PDF
+# - don't install INSTALL (it's autoconf boilerplate)
+# - do install AUTHORS (contains actual information)
+# - fix paths in FILES section of man page + html doc
+# Installed package is now 1/14 the size the old 2.9 package was.
+
+PRGNAM=argtable
+VERSION=${VERSION:-2.13}
+SRCVER=${VERSION/./-}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_SBo}
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i586 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+if [ "$ARCH" = "i586" ]; then
+  SLKCFLAGS="-O2 -march=i586 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+  LIBDIRSUFFIX="64"
+else
+  SLKCFLAGS="-O2"
+  LIBDIRSUFFIX=""
+fi
+
+set -e 
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $PRGNAM$SRCVER
+tar xvf $CWD/$PRGNAM$SRCVER.tar.gz
+cd $PRGNAM$SRCVER
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 -o -perm 511 \) \
+ -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
+ -exec chmod 644 {} \;
+
+# man and html pages misuse autoconf macros
+patch -p1 < $CWD/doc_paths.diff
+
+CFLAGS="$SLKCFLAGS" \
+CXXFLAGS="$SLKCFLAGS" \
+./configure \
+  --prefix=/usr \
+  --libdir=/usr/lib${LIBDIRSUFFIX} \
+  --sysconfdir=/etc \
+  --mandir=/usr/man \
+  --docdir=/usr/doc/$PRGNAM-$VERSION \
+  --localstatedir=/var \
+  --enable-shared \
+  --disable-static \
+  --build=$ARCH-slackware-linux \
+  --host=$ARCH-slackware-linux
+
+make
+make install-strip DESTDIR=$PKG
+
+# upstream installs 2 copies of the man page, use symlink instead
+MAN3=$PKG/usr/man/man3
+rm -f $MAN3/$PRGNAM.3
+gzip $MAN3/${PRGNAM}2.3
+ln -s ${PRGNAM}2.3.gz $MAN3/$PRGNAM.3.gz
+
+# before adding this bit, the package was 4.7MB ungzipped, 4.3MB (92%)
+# of which were PDF and PostScript copies of the API docs, which almost
+# nobody is ever going to read anyway. We'll keep the HTML ones, they're
+# the same information, much smaller. If anyone *really* wants the bloated
+# docs, they can set PS=yes and/or PDF=yes.
+
+DOCDIR=$PKG/usr/doc/$PRGNAM-$VERSION
+[ "${PS:-no}" != "yes" ] && rm -f $DOCDIR/*.ps
+[ "${PDF:-no}" != "yes" ] && rm -f $DOCDIR/*.pdf
+
+cp -a AUTHORS ChangeLog COPYING README $DOCDIR
+cat $CWD/$PRGNAM.SlackBuild > $DOCDIR/$PRGNAM.SlackBuild
+
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}

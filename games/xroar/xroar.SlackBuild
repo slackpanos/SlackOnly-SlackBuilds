@@ -1,0 +1,205 @@
+#!/bin/sh
+
+# Slackware build script for xroar
+
+# Written by B. Watson (yalhcru@gmail.com)
+
+# Licensed under the WTFPL. See http://www.wtfpl.net/txt/copying/ for details.
+
+# 20170822 bkw:
+# - update for 0.34.8
+# - add SDL2=no and GTKGLEXT=no options, mostly for my own testing
+# - record build options in slack-desc
+
+# 20170122 bkw:
+# - update for 0.34.7
+
+# 20161016 bkw:
+# - update for 0.34.5
+# - move binary to /usr/games
+# - mention SDL2 in README
+# - fix jack option (--with-jack, not --enable-jack)
+
+# 20150912 bkw:
+# - update for 0.33.2
+# - use upstream's man page, get rid of mine
+
+# 20140824 bkw:
+# - update for 0.32
+# - somehow I lost the POD source to the man page, recreate from xroar.6
+
+# 20140313 bkw:
+# - update for 0.31.1
+# - change download link to upstream's, looks OK now
+# - update alsa_first.diff (module.c -> src/module.c)
+# - update man page (new options, convert to POD)
+# - add jack support
+
+# 20130617 bkw:
+# - update for 0.29.5
+
+# 20121218 bkw:
+# - update for 0.28.1
+# - change download link to my own server, since upstream changes their URL
+#   for every release
+# - include missing .png file for HTML doc
+# - add patch to prefer ALSA over OSS
+# - LDFLAGS=-lm (wasn't needed for old version)
+# - mention gtkglext in README as an optional dep
+
+PRGNAM=xroar
+VERSION=${VERSION:-0.34.8}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_SBo}
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i586 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+if [ "$ARCH" = "i586" ]; then
+  SLKCFLAGS="-O2 -march=i586 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+  LIBDIRSUFFIX="64"
+else
+  SLKCFLAGS="-O2"
+  LIBDIRSUFFIX=""
+fi
+
+set -e
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $PRGNAM-$VERSION
+tar xvf $CWD/$PRGNAM-$VERSION.tar.gz
+cd $PRGNAM-$VERSION
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 -o -perm 511 \) \
+ -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
+ -exec chmod 644 {} \;
+
+# Have the emulator try ALSA before OSS. This prevents the emu from
+# taking over the ALSA device when using OSS emulation (stops other
+# apps from making any sound at all!)
+patch -p1 < $CWD/alsa_first.diff
+
+# Not sure why anyone would need this, but it's easy to support.
+JACKOPT="--without-jack"
+[ "${JACK:-no}" = "yes" ] && JACKOPT="--with-jack"
+
+[ "${SDL2:-yes}" = "no" ] && SDL2OPT="--without-sdl2"
+
+[ "${GTKGLEXT:-yes}" = "no" ] && GTKGLOPT="--without-gtkgl"
+
+# fix underlinking via LDFLAGS instead of a .diff
+
+LDFLAGS="-lm" \
+CFLAGS="$SLKCFLAGS" \
+CXXFLAGS="$SLKCFLAGS" \
+./configure \
+  $JACKOPT $SDL2OPT $GTKGLOPT \
+  --bindir=/usr/games \
+  --prefix=/usr \
+  --libdir=/usr/lib${LIBDIRSUFFIX} \
+  --sysconfdir=/etc \
+  --localstatedir=/var \
+  --mandir=/usr/man \
+  --docdir=/usr/doc/$PRGNAM-$VERSION \
+  --build=$ARCH-slackware-linux
+
+make
+make install DESTDIR=$PKG
+strip $PKG/usr/games/$PRGNAM
+
+# set these for use in the slack-desc
+SDLVER=1.2
+JACK=no
+GTKGLEXT=no
+ldd $PKG/usr/games/$PRGNAM > ldd.tmp
+grep -q libSDL2 ldd.tmp     && SDLVER=2
+grep -q libjack ldd.tmp     && JACK=yes
+grep -q libgtkglext ldd.tmp && GTKGLEXT=yes
+
+# man page needs to be in section 6, since this is in games/
+mkdir -p $PKG/usr/man/man6
+sed '1s,\<1\>,6,' \
+  < $PKG/usr/man/man1/$PRGNAM.1 \
+  | gzip -9c > $PKG/usr/man/man6/$PRGNAM.6.gz
+rm -rf $PKG/usr/man/man1
+
+mv $PKG/usr/share/info $PKG/usr/info
+rm -rf $PKG/usr/share
+rm -f $PKG/usr/info/dir
+gzip -9 $PKG/usr/info/*.info*
+
+mkdir -p $PKG/usr/share/xroar/roms
+
+# Mini-firmware. This is a freeware, incomplete implementation of the
+# Dragon32 extended BASIC, allows running at least some programs.
+# dragon.rom comes from http://www.6809.org.uk/dragon/dragon.rom
+cat $CWD/dragon.rom > $PKG/usr/share/$PRGNAM/roms/mini-dragon.rom
+
+ROMS="mini-dragon"
+# Optional ROM images (from MESS site)
+for zip in coco coco2 cocoe dragon32 dragon64; do
+  if [ -e $CWD/$zip.zip ]; then
+    rm -f *.rom
+    unzip $CWD/$zip.zip
+    install -oroot -groot -m0644 *.rom $PKG/usr/share/$PRGNAM/roms
+    ROMS="$ROMS $zip"
+  fi
+done
+
+# If the user doesn't include a d32.rom from a zip file, make the mini-rom
+# the default (at least the emu will start, that way)
+if [ ! -e $PKG/usr/share/$PRGNAM/roms/d32.rom ]; then
+  ln -s mini-dragon.rom $PKG/usr/share/$PRGNAM/roms/d32.rom
+fi
+
+# Icon taken from Fedora package here:
+# ftp://mirror.switch.ch/pool/3/mirror/rpmfusion/free/fedora/updates/8/i386/xroar-0.21-2.fc8.i386.rpm
+# Current versions of xroar include windows and mac icons that are larger,
+# but they don't include the word 'xroar' (just the X-shaped graphic), so
+# I'm sticking with the old Fedora icon.
+mkdir $PKG/usr/share/pixmaps
+cat $CWD/$PRGNAM.png > $PKG/usr/share/pixmaps/$PRGNAM.png
+
+mkdir $PKG/usr/share/applications
+cp $CWD/*.desktop $PKG/usr/share/applications
+
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+# Don't bother with the README: it's only about installation, not usage
+cp -a COPYING* ChangeLog $PKG/usr/doc/$PRGNAM-$VERSION
+
+# HTML version of the info page, for those who hate info pages...
+( cd doc && make $PRGNAM.html )
+cp doc/$PRGNAM.html doc/*png $PKG/usr/doc/$PRGNAM-$VERSION
+
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+
+mkdir -p $PKG/install
+sed -e "s,@JACK@,$JACK," \
+    -e "s,@SDLVER@,$SDLVER," \
+    -e "s,@GTKGLEXT@,$GTKGLEXT," \
+    -e "s,@ROMS@,$ROMS," \
+    $CWD/slack-desc > $PKG/install/slack-desc
+cat $CWD/doinst.sh > $PKG/install/doinst.sh
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}

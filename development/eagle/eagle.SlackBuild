@@ -1,0 +1,116 @@
+#!/bin/sh
+
+# Slackware build script for eagle (binary repackaging)
+
+# Copyright 2008,2015 Kyle Guinn <elyk03@gmail.com>, USA
+# Copyright 2010,2013 Niels Horn, Rio de Janeiro, RJ, Brazil
+# Copyright 2016 Andrzej Telszewski, Banie
+# All rights reserved.
+#
+# Redistribution and use of this script, with or without modification, is
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE AUTHOR "AS IS" AND ANY EXPRESS OR IMPLIED
+#  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+#  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO
+#  EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+#  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+#  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+#  OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+#  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+#  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+#  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+PRGNAM=eagle
+VERSION=${VERSION:-7.7.0}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_SBo}
+
+ARCH=${ARCH:-$(uname -m)}
+case $ARCH in
+  i?86)   PLATFORM=lin32; ARCH=i686 ;;
+  x86_64) PLATFORM=lin64 ;;
+  *)      echo "$ARCH is unsupported."; exit 1 ;;
+esac
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+# Documentation is distributed for English, German and Chinese.
+# Due to the size of the documentation, only include one language.
+DOC_LANG=${DOC_LANG:-en} # One of "all", "de", "en", or "zh".
+
+set -e
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+sh $CWD/$PRGNAM-$PLATFORM-$VERSION.run $PKG/opt
+chown -R root:root $PKG
+chmod -R u+w,go-w,a+rX-st $PKG
+find $PKG/opt/$PRGNAM-$VERSION/lbr/seeed -type f -exec chmod -x {} +
+find $PKG/opt/$PRGNAM-$VERSION/projects/examples/seeed -type f -exec chmod -x {} +
+
+# Create the license key file.  EAGLE will write to this the first time it is
+# run.  After that, you should change the permissions to 0644.
+touch $PKG/opt/$PRGNAM-$VERSION/bin/$PRGNAM.key
+chmod 0666 $PKG/opt/$PRGNAM-$VERSION/bin/$PRGNAM.key
+
+mkdir -p $PKG/usr/bin
+ln -s /opt/$PRGNAM-$VERSION/bin/$PRGNAM $PKG/usr/bin/eagle
+
+mkdir -p $PKG/usr/share/icons/hicolor/16x16/apps
+mkdir -p $PKG/usr/share/icons/hicolor/48x48/apps
+ln -s /opt/$PRGNAM-$VERSION/bin/eagleicon16.png $PKG/usr/share/icons/hicolor/16x16/apps/$PRGNAM.png
+ln -s /opt/$PRGNAM-$VERSION/bin/eagleicon50.png $PKG/usr/share/icons/hicolor/48x48/apps/$PRGNAM.png
+
+mkdir -p $PKG/usr/share/applications
+cat $CWD/$PRGNAM.desktop > $PKG/usr/share/applications/$PRGNAM.desktop
+
+# Move any man pages to the proper location.
+mkdir -p $PKG/usr/man/man1
+mv $PKG/opt/$PRGNAM-$VERSION/doc/*.1 $PKG/usr/man/man1
+find $PKG/usr/man -type f -exec gzip -9 {} +
+
+if [ ${DOC_LANG} != "all" ]; then
+  # Move each language-specific file to its own subdir.
+  cd $PKG/opt/$PRGNAM-$VERSION/doc
+  for lang in de en zh; do mkdir -p ${lang}/ulp; done
+  for lang in de en;    do mv README_${lang} ${lang}/README; done
+  for lang in de en;    do mv UPDATE_${lang} ${lang}/UPDATE; done
+  for lang in de en;    do mv library_${lang}.txt ${lang}/library.txt; done
+  for lang in de en zh; do mv manual_${lang}.pdf ${lang}/manual.pdf; done
+  for lang in de en zh; do mv tutorial_${lang}.pdf ${lang}/tutorial.pdf; done
+  for lang in de en;    do mv ulp/connect-device-split-symbol-${lang}.pdf ${lang}/ulp/connect-device-split-symbol.pdf; done
+  for lang in de en;    do mv ulp/generate-3d-idf-data_${lang}.pdf ${lang}/ulp/generate-3d-idf-data.pdf; done
+  for lang in de en;    do mv ulp/make-symbol-device-package-bsdl-2011-${lang}.pdf ${lang}/ulp/make-symbol-device-package-bsdl-2011.pdf; done
+
+  # Prefer the English docs as a base set.
+  cd $PKG/opt/$PRGNAM-$VERSION/doc/en
+  find . -type f -exec mv {} ../{} \;
+
+  # Replace the base set with other languages.
+  cd $PKG/opt/$PRGNAM-$VERSION/doc/${DOC_LANG}
+  find . -type f -exec mv {} ../{} \;
+
+  # Delete all alternate language files.
+  cd $PKG/opt/$PRGNAM-$VERSION/doc
+  for lang in de en zh; do rm -rf ${lang}; done
+fi
+
+# Move the documentation to the proper location.
+mkdir -p $PKG/usr/doc
+mv $PKG/opt/$PRGNAM-$VERSION/doc $PKG/usr/doc/$PRGNAM-$VERSION
+ln -s /usr/doc/$PRGNAM-$VERSION $PKG/opt/$PRGNAM-$VERSION/doc
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+cat $CWD/doinst.sh  > $PKG/install/doinst.sh
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}

@@ -1,0 +1,9 @@
+SDL2
+ffmpeg
+freealut
+jack-audio-connection-kit
+numpy3
+opencollada
+openimageio
+python-requests
+valgrind

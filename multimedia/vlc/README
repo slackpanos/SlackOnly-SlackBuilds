@@ -1,0 +1,43 @@
+VLC media player is a free and open source media player and multi-
+media framework written by the VideoLAN project. VLC is a portable
+multimedia player, encoder, and streamer supporting many audio and
+video codecs and file formats as well as DVDs, VCDs, and various
+streaming protocols. It is able to stream over networks and to
+transcode multimedia files and save them into various formats.
+
+This build aims to support as many options as possible using
+the SlackBuilds listed in the REQUIRES field of the vlc.info file.
+No script changes are necessary to include particular options; if they
+are detected at build time, they will be included. Conversely if
+optional packages are not available at build time, vlc will generally
+continue to build with a reduced feature set.
+
+Support for OpenCV is temporarily disabled by default due to build error.
+However it is possible to include opencv support using the somewhat
+older opencv-legacy SlackBuild rather than opencv. It then needs to
+be explicitly enabled by setting the the OPENCV environment variable
+to "yes" e.g.
+  OPENCV=yes sh vlc.SlackBuild
+This requires the opencv-legacy package to be installed at build time.
+
+Support for Wayland is a special case. It is not supported by default
+but can be enabled setting the WAYLAND environment variable to "yes"
+when running the SlackBuild e.g.
+  WAYLAND=yes sh vlc.SlackBuild
+This support also requires additional SBo packages wayland-egl and
+wayland-protocols. It also depends on the qt5 package having been
+built with wayland support i.e. wayland package was installed when the
+qt5 package was built.
+ 
+The vsxu SlackBuild is now optional for x86 machines; removed from
+REQUIRES since it does not compile on arm machines at the moment.
+
+Please advise the maintainer to suggest support for any further options.
+
+*NOTES*
+- the qt4 interface seems not to be working ATM so the qt5 one is
+  enabled by default: this means qt5 is a new mandatory dependency
+- you *need* to version-bump the libva and libva-intel-driver in
+  Slackware to versions 1.7.3 for VAAPI support: as we suppose
+  a standard install, "--enable-libva=no" is added between the
+  configure options, instead 

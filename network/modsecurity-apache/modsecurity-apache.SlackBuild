@@ -1,0 +1,110 @@
+#!/bin/sh
+
+# Slackware build script for ModSecurity
+
+# Written by pyllyukko
+
+PRGNAM=modsecurity-apache
+SRCNAM=modsecurity
+VERSION=${VERSION:-2.9.1}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_SBo}
+
+CRS_VERSION="2.2.9"
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i486 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+if [ "$ARCH" = "i486" ]; then
+  SLKCFLAGS="-O2 -march=i486 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+  LIBDIRSUFFIX="64"
+else
+  SLKCFLAGS="-O2"
+  LIBDIRSUFFIX=""
+fi
+
+# The package can be verified with Breno Silva Pinto's PGP key (0x6980F8B0)
+# If we have GPG installed, we try to verify the signature.
+if [ -x "/usr/bin/gpg" -a -x "/usr/bin/gpgv" ]
+then
+  set +e
+  # This will check if we have the correct key in our keyring.
+  # For the trustedkeys.gpg, see "man 1 gpgv".
+  /usr/bin/gpg --keyring trustedkeys.gpg --no-default-keyring --list-keys 0xE6DFB08CE8B11277 &>/dev/null
+  GPG_RET=${?}
+  # 2 means we don't have his key, 0 means we do.
+  set -e
+  # If we have the key and the signature file, we verify the package with GPG
+  if [ ${GPG_RET} -eq 0 -a \
+       -f "${CWD}/${SRCNAM}-${VERSION}.tar.gz.asc" ]
+  then
+    /usr/bin/gpgv "${CWD}/${SRCNAM}-${VERSION}.tar.gz.asc" "${CWD}/${SRCNAM}-${VERSION}.tar.gz"
+  fi
+fi
+
+set -e
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf ${SRCNAM}-${VERSION}
+tar xvf $CWD/${SRCNAM}-${VERSION}.tar.gz
+cd ${SRCNAM}-${VERSION}
+tar xvf $CWD/owasp-modsecurity-crs-${CRS_VERSION}.tar.gz
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+  -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+
+CFLAGS="$SLKCFLAGS" \
+CXXFLAGS="$SLKCFLAGS" \
+./configure \
+  --prefix=/usr \
+  --build=$ARCH-slackware-linux
+
+make
+make install-strip DESTDIR=$PKG
+
+# It leaves two copies of the library, we'll only need one
+rm $PKG/usr/lib/*.so
+rmdir --ignore-fail-on-non-empty $PKG/usr/lib
+
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+cp -a CHANGES LICENSE NOTICE README.TXT README_WINDOWS.TXT authors.txt \
+  $PKG/usr/doc/$PRGNAM-$VERSION
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+
+mkdir -p $PKG/etc/httpd/extra
+cat modsecurity.conf-recommended > $PKG/etc/httpd/extra/modsecurity-recommended.conf.new
+cat unicode.mapping > $PKG/etc/httpd/extra/unicode.mapping
+
+# The Core Rule Set
+mkdir -p ${PKG}/etc/httpd/crs
+cp -Rv owasp-modsecurity-crs-${CRS_VERSION}/* ${PKG}/etc/httpd/crs
+cat owasp-modsecurity-crs-${CRS_VERSION}/modsecurity_crs_10_setup.conf.example > \
+  ${PKG}/etc/httpd/crs/modsecurity_crs_10_setup.conf.new
+
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+cat $CWD/doinst.sh > $PKG/install/doinst.sh
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}

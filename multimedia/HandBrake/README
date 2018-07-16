@@ -1,0 +1,22 @@
+HandBrake is a DVD ripping application that reads DVDs and outputs to a 
+variety of video and audio formats, with options for subtitles, alternate 
+data streams, presets, and control over advanced options like bitrate, 
+pixel aspect ratio, deinterlacing, and so on.
+
+The legality of ripping content from commercial DVDs varies from
+nation to nation.
+
+By default, HandBrake statically compiles many major encoders and
+decoders into the HandBrake binary. It will not use your local ffmpeg,
+for instance.
+
+To skip building the GTK GUI, pass GUI=no to the script:
+
+    # GUI=no sh ./HandBrake.SlackBuild
+
+
+Commands
+--------
+
+* The command to launch the HandBrake GUI is `ghb`
+* Without the GUI, it's `HandBrakeCLI`

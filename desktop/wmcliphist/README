@@ -1,0 +1,5 @@
+wmcliphist (dockable clipboard history for Window Maker)
+
+wmcliphist keeps a history of clipboard operations and allows you to
+put previously copied items back into the clipboard for pasting to
+other applications.

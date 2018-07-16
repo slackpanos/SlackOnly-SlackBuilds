@@ -1,0 +1,89 @@
+#!/bin/sh
+
+# Slackware build script for MLton
+# Slackware build script for mlton
+# Originally by Jockey S. Kyd (jockey dot kyd at gmail dot com)
+# Modified by Ryan P.C. McQuen, WA, ryanpcmcquen@member.fsf.org
+# Copyright 2018, Scot Doyle
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 2 of the License, or
+# (at your option) any later version, with the following exception:
+# the text of the GPL license may be omitted..
+
+# This program is distributed in the hope that it will be useful, but
+# without any warranty; without even the implied warranty of
+# merchantability or fitness for a particular purpose. Compiling,
+# interpreting, executing or merely reading the text of the program
+# may result in lapses of consciousness and/or very being, up to and
+# including the end of all existence and the Universe as we know it.
+# See the GNU General Public License for more details.
+
+# You may have received a copy of the GNU General Public License
+# along with this program (most likely, a file named COPYING).  If
+# not, see <http://www.gnu.org/licenses/>.
+
+PRGNAM=mlton
+VERSION=${VERSION:-20180207}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_SBo}
+PREBUILT=${PREBUILT:-$PRGNAM-$VERSION-1.amd64-linux}
+
+ARCH=${ARCH:-$(uname -m)}
+case "$ARCH" in
+    x86_64) : ;;
+         *) printf "This script only supports x86_64.\n" 1>&2; exit 1 ;;
+esac
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+set -e
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $PREBUILT $PRGNAM-$VERSION
+
+tar xvf $CWD/$PREBUILT.tgz
+tar xvf $CWD/$PRGNAM-$VERSION.src.tgz
+
+# Permissions are already set
+chown -R root:root $PREBUILT $PRGNAM-$VERSION
+
+cd $PRGNAM-$VERSION
+
+# Prefer the pre-built compiler
+PATH=$TMP/$PREBUILT/bin:$PATH
+
+# Without any ulimit, "amd64 code gen" uses all available memory.
+ulimit -v 4000000
+
+make -j1 all
+make PREFIX="$PKG" install
+
+# Fix ownership of stuff from 'make install'
+chown -R root:root $PKG
+
+# Binaries are already stripped
+
+cd $PKG
+mkdir -p usr
+mv share/man usr
+if [ "$1" = "-docs" ]; then
+  mkdir -p usr/share/doc
+  mv share/doc/$PRGNAM usr/share/doc/$PRGNAM-$VERSION
+  cat $CWD/$PRGNAM.SlackBuild > usr/share/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+fi
+rm -rf share
+
+mv lib usr/lib64
+mv bin usr
+sed -i "s:^lib=.*:lib=/usr/lib64/mlton:" usr/bin/mlton
+
+mkdir install
+cat $CWD/slack-desc > install/slack-desc
+
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}

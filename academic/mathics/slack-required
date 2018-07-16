@@ -1,0 +1,7 @@
+colorama
+mpmath
+ply
+python-dateutil
+python-django-legacy
+six
+sympy

@@ -1,0 +1,11 @@
+Jinja2
+MarkupSafe
+PyYAML
+futures
+msgpack-python
+pycrypto
+python-requests
+pyzmq
+singledispatch
+tornado
+zeromq

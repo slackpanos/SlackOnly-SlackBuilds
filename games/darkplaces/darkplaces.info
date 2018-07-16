@@ -1,0 +1,12 @@
+PRGNAM="darkplaces"
+VERSION="20140513"
+HOMEPAGE="http://icculus.org/twilight/darkplaces/"
+DOWNLOAD="http://icculus.org/twilight/darkplaces/files/darkplacesengine20140513.zip \
+          http://icculus.org/twilight/darkplaces/files/darkplacesmod20130301.zip"
+MD5SUM="2ec56797b75465708c8495ef583d9c79 \
+        2a1ce3fbc54ed75a1a9e5eab912543a2"
+DOWNLOAD_x86_64=""
+MD5SUM_x86_64=""
+REQUIRES=""
+MAINTAINER="M.Dinslage"
+EMAIL="daedra1980@gmail.com"

@@ -1,0 +1,113 @@
+#!/bin/sh
+
+# Slackware build script for MongoDB
+
+# Copyright 2015 Miguel De Anda <miguel@thedeanda.com>
+# All rights reserved.
+#
+# Redistribution and use of this script, with or without modification, is
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE AUTHOR "AS IS" AND ANY EXPRESS OR IMPLIED
+#  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+#  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO
+#  EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+#  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+#  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+#  OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+#  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+#  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+#  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+
+PRGNAM="mongodb"
+VERSION=${VERSION:-3.4.9}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_SBo}
+MAKEJOBS=${MAKEJOBS:-1}
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i686 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+MONGO_USER=${MONGO_USER:-285}
+MONGO_GROUP=${MONGO_GROUP:-285}
+
+SRC_FILE=$PRGNAM-src-r$VERSION.tar.gz
+SRC_FLDR=$PRGNAM-src-r$VERSION
+
+set -e
+
+# Bail if user or group isn't valid on your system
+if ! getent passwd mongo 1>/dev/null 2>/dev/null; then
+
+cat << EOF
+
+  You must have a mongo user to run this script
+
+  # groupadd -g $MONGO_USER mongo
+  # useradd -u $MONGO_USER -d /var/lib/$PRGNAM -s /bin/false -g mongo mongo
+
+EOF
+
+  exit
+elif ! getent group mongo 1>/dev/null 2>/dev/null; then
+
+cat << EOF
+
+  You must have a mongo group to run this script
+  # groupadd -g $MONGO_GROUP mongo
+
+EOF
+  exit
+fi
+
+rm -fr $TMP/$SRC_FLDR $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+tar xvf $CWD/$SRC_FILE
+cd $SRC_FLDR
+chown -R root.root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+  -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+
+if [ "$ARCH" = "x86_64" ]; then
+  scons -j $MAKEJOBS --ssl --disable-warnings-as-errors --prefix=${PKG}/usr core install
+else
+  scons -j $MAKEJOBS --ssl --disable-warnings-as-errors --prefix=${PKG}/usr core --wiredtiger=off install
+fi
+
+find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
+  | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
+
+
+mkdir -p ${PKG}/usr/doc/${PRGNAM}-${VERSION}
+cp distsrc/* ${PKG}/usr/doc/${PRGNAM}-${VERSION}
+
+mkdir -p $PKG/etc/rc.d
+cat $CWD/rc.mongodb > $PKG/etc/rc.d/rc.mongodb.new
+
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+cat $CWD/doinst.sh > $PKG/install/doinst.sh
+
+mkdir -p $PKG/var/lib/mongodb
+chown mongo.mongo $PKG/var/lib/mongodb
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}

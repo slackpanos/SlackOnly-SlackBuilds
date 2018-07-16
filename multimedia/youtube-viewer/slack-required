@@ -1,0 +1,6 @@
+perl-JSON
+perl-JSON-XS
+perl-LWP-Protocol-https
+perl-Module-Build
+perl-data-dump
+perl-lwp-useragent-cached

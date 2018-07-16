@@ -1,0 +1,4 @@
+Expect is a tool to automate interactions with command line programs
+that expose a text terminal interface.
+
+perl-IO-Stty is an optional dependency.

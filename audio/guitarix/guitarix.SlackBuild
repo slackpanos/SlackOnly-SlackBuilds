@@ -1,0 +1,164 @@
+#!/bin/sh
+
+# Slackware build script for guitarix
+# Originally written by Michales Michaloudes (email removed)
+
+# Modified by B. Watson <yalhcru@gmail.com>. Modified version released
+# under the WTFPL, for details see http://www.wtfpl.net/txt/copying/
+
+# Note to self: git URL for guitarix is:
+# git://git.code.sf.net/p/guitarix/git/
+
+# 20180619 bkw:
+# - Updated for 0.37.1.
+# - Force building with bundled zita-convolver and resampler libs.
+#   Previously, system libs would be linked if they were installed,
+#   otherwise bundled libs were used... caused a problem if the
+#   system zita-convolver was updated to an incompatible version.
+# - Add config options to re-enable ladspa and lv2 mod-gui stuff that
+#   used to be enabled by default in 0.36.1.
+# - Add patches from upstream git, to fix segfaults when online
+#   button gets clicked. Also if dbus isn't running, guitarix will now
+#   actually say so, in its error message.
+# - Move old changelog entries to ChangeLog.old.
+
+# 20171223 bkw: Updated for 0.36.1.
+# 20170825 bkw: Updated for 0.35.6. Install the bundled roboto font.
+# 20170725 bkw: Updated for 0.35.5
+
+# 20170710 bkw:
+# - Updated for 0.35.4
+# - Remove README stuff about webkitgtk, since upstream dropped it.
+# - Add README.online with troubleshooting info. I had trouble
+#   getting the new Online Presets stuff to work, so hopefully this
+#   might help the next guy.
+
+# 20170404 bkw:
+# - Updated for 0.35.3
+# - Use + rather than ; in find/chmod. Noticeably faster.
+
+# 20170306 bkw:
+# - Flip changelog comments right-side up
+# - Stop writing outside of $TMP.
+
+PRGNAM=guitarix
+VERSION=${VERSION:-0.37.1}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_SBo}
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i586 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+if [ "$ARCH" = "i586" ]; then
+  SLKCFLAGS="-O2 -march=i586 -mtune=i686 -msse"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686 -msse"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+  LIBDIRSUFFIX="64"
+else
+  SLKCFLAGS="-O2"
+  LIBDIRSUFFIX=""
+fi
+
+# Tarballs are now named "guitarix2-$VERSION", but the dir inside the
+# tarball is still "guitarix-$VERSION".
+TARNAME=${PRGNAM}2
+
+set -e
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $PRGNAM-$VERSION
+tar xvf $CWD/$TARNAME-$VERSION.tar.xz
+cd $PRGNAM-$VERSION
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \+ -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+  -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \+
+
+# Apply commits a4792a6b9c and 7278d18e0 from upstream, to stop
+# segfaulting when user clicks the online button. Note these are
+# -p2 patches (made with "git format-patch"), unusual for a slackbuild.
+patch -p2 < $CWD/patches/0001-fix-bug-59-Guitarix-crashes-when-click-online-for-pr.patch
+patch -p2 < $CWD/patches/0002-fix-bug-59-Guitarix-crashes-when-click-online-for-pr.patch
+
+# guitarix wants to install the roboto font in the wrong place for
+# slackware.
+sed -i '/fonts/s,\<truetype\>,TTF,' wscript tools/undiag
+
+# this is no longer documented in README, but still here for debugging.
+if [ "${LV2:-yes}" = "no" ]; then
+  LV2OPT=--no-lv2
+fi
+
+# grrr, -DNDEBUG doesn't get added to the flags automatically...
+LIBDIR="/usr/lib${LIBDIRSUFFIX}"
+./waf configure \
+  --prefix=/usr \
+  --cxxflags-release="$SLKCFLAGS -DNDEBUG" \
+  --ladspadir="$LIBDIR/ladspa/" \
+  --lv2dir="$LIBDIR/lv2/" \
+  --libdir="$LIBDIR" \
+  --no-avahi \
+  --no-ldconfig \
+  --no-desktop-update \
+  --includeresampler \
+  --includeconvolver \
+  --ladspa \
+  --new-ladspa \
+  --mod-lv2 \
+  $EXTRAOPT \
+  $LV2OPT
+./waf build # -v # verbose, shows actual commands
+./waf install --destdir=$PKG
+
+# --install-roboto-font does the wrong thing, we'll install it manually.
+mkdir -p $PKG/usr/share/fonts/TTF
+install -m0644 fonts/* $PKG/usr/share/fonts/TTF
+
+find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
+  | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
+
+# Shared libraries are supposed to be +x.
+chmod 755 $PKG/$LIBDIR/libgx*.so.?.?
+
+# Man page written for this SlackBuild, see guitarix.rst.
+mkdir -p $PKG/usr/man/man1
+gzip -9c < $CWD/$PRGNAM.1 > $PKG/usr/man/man1/$PRGNAM.1.gz
+
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+cp -a COPYING changelog README* $PKG/usr/doc/$PRGNAM-$VERSION
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+find $PKG/usr/doc -type f -exec chmod 0644 {} \;
+
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+cat $CWD/slack-required > $PKG/install/slack-required
+cat $CWD/doinst.sh  > $PKG/install/doinst.sh
+
+# Only add capability stuff if not disabled:
+if [ "${SETCAP:-yes}" = "yes" ]; then
+  cat $CWD/setcap.sh >> $PKG/install/doinst.sh
+  # Only allow execution by audio group
+  chown root:audio $PKG/usr/bin/$PRGNAM
+  chmod 0750 $PKG/usr/bin/$PRGNAM
+fi
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}

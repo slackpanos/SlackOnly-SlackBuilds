@@ -1,0 +1,9 @@
+haskell-attoparsec
+haskell-blaze-builder
+haskell-dlist
+haskell-hashable
+haskell-mtl
+haskell-scientific
+haskell-syb
+haskell-unordered-containers
+haskell-vector

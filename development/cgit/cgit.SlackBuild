@@ -1,0 +1,132 @@
+#!/bin/sh
+
+# Slackware build script for cgit
+# Copyright 2013-2017 Matteo Bernardini <ponce@slackbuilds.org>, Pisa, Italy
+# All rights reserved.
+#
+# Redistribution and use of this script, with or without modification, is
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE AUTHOR "AS IS" AND ANY EXPRESS OR IMPLIED
+#  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+#  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO
+#  EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+#  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+#  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+#  OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+#  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+#  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+#  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+PRGNAM=cgit
+VERSION=${VERSION:-1.1}
+BUILD=${BUILD:-3}
+TAG=${TAG:-_SBo}
+
+DOCROOT=${DOCROOT:-/var/www}
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i586 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+if [ "$ARCH" = "i586" ]; then
+  SLKCFLAGS="-O2 -march=i586 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+  LIBDIRSUFFIX="64"
+else
+  SLKCFLAGS="-O2"
+  LIBDIRSUFFIX=""
+fi
+
+CGIT_VERSION=${CGIT_VERSION:-v1.1}
+GIT_VERSION=${GIT_VERSION:-2.10.4}
+
+DOCS="cgitrc.5.txt COPYING README $CWD/config/cgitrc.sample \
+      $CWD/config/cgit-lighttpd.conf $CWD/config/cgit-httpd.conf \
+      $CWD/config/email-libravatar-korg-additions.css \
+      $CWD/config/email-gravatar-sbo-additions.css"
+
+set -e
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $PRGNAM-$VERSION
+tar xvf $CWD/v$VERSION.tar.gz || tar xvf $CWD/$PRGNAM-$VERSION.tar.?z*
+cd $PRGNAM-$VERSION
+chown -R root:root .
+find -L . \
+\( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+ -o -perm 511 \) -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+ -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+
+# apply some upstream patches
+patch -p1 < $CWD/patches/0004-syntax-highlighting-replace-invalid-unicode-with.patch
+patch -p1 < $CWD/patches/0005-ui-patch-fix-crash-when-using-path-limit.patch
+patch -p1 < $CWD/patches/0006-ui-repolist-properly-sort-by-age.patch
+patch -p1 < $CWD/patches/0007-Remove-unused-variable-from-sort_section.patch
+patch -p1 < $CWD/patches/0011-ui-atom-properly-escape-delimiter-in-page-link.patch
+patch -p1 < $CWD/patches/0012-ui-shared-don-t-print-path-crumbs-without-a-repo.patch
+patch -p1 < $CWD/patches/0013-parsing-clear-query-path-before-starting.patch
+patch -p1 < $CWD/patches/0014-cgit-don-t-set-vpath-unless-repo-is-set.patch
+patch -p1 < $CWD/patches/0015-ui-plain-print-symlink-content.patch
+
+# prepare sources
+sed -i Makefile \
+    -e "s|-g -Wall -Igit|-Wall ${SLKCFLAGS} -Igit|" \
+    -e "s|\/lib$|/lib${LIBDIRSUFFIX}|" \
+    -e "s|(libdir)|(prefix)/share|" \
+    -e "s|/usr/local|/usr|"
+sed -e "s|@DOCROOT@|$DOCROOT|g" $CWD/config/cgit.conf > cgit.conf
+echo "CGIT_VERSION = $CGIT_VERSION" >> cgit.conf
+
+# extract the git tarball
+rm -fR git
+tar xvf $CWD/git-$GIT_VERSION.tar.?z*
+mv git-* git
+
+make
+make install DESTDIR=$PKG
+
+find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
+  | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
+
+# Install additionals lua scripts
+install -m 0644 -D $CWD/config/email-libravatar-korg.lua \
+  $PKG/usr/share/cgit/filters/email-libravatar-korg.lua
+install -m 0644 -D $CWD/config/email-gravatar-sbo.lua \
+  $PKG/usr/share/cgit/filters/email-gravatar-sbo.lua
+
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+install -m0644 -oroot $DOCS $PKG/usr/doc/$PRGNAM-$VERSION
+sed -i "s|@DOCROOT@|$DOCROOT|g" $PKG/usr/doc/$PRGNAM-$VERSION/*
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+
+# prepare the cache dir: default permissions are for the apache user and group
+mkdir -p $PKG/var/cache/cgit
+chown 80.80 $PKG/var/cache/cgit
+chmod 775 $PKG/var/cache/cgit
+
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}

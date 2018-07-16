@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Jedi Academy (Single)
+Comment=A Linux port of Star Wars Jedi Knight: Jedi Academy
+Icon=OpenJK-academy
+Exec=/opt/JediAcademy/openjk_sp.TARGETARCH
+Terminal=false
+Categories=Game;

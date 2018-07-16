@@ -1,0 +1,137 @@
+#!/bin/sh
+
+# Slackware build script for oblige
+
+# Written by B. Watson (yalhcru@gmail.com)
+
+# Licensed under the WTFPL. See http://www.wtfpl.net/txt/copying/ for details.
+
+# 20171220 bkw:
+# - update for 7.70. Upstream calls this the final release :(
+
+# 20170817 bkw:
+# - update for 7.666. Sadly this might be the last update, upstream is
+#   tired of working on oblige :(
+
+# 20161016 bkw:
+# - update for 7.50
+# - get rid of CRLF endings in docs
+# - allow script to build both 6.20 and 7.50, see README for why
+# - reword short description in slack-desc (was too vague)
+cat $CWD/slack-required > $PKG/install/slack-required
+
+# 20150510 bkw:
+# - version bump to 6.20
+# - use upstream's .desktop and icon
+# - get rid of hacked-up Makefile.unixy, use upstream's Makefile
+# - convert POD man page source to RST
+
+# 20140916 bkw: bump BUILD to 2.
+# add man page.
+
+# 20140827 bkw: version bump, reset BUILD to 1.
+# oblige 6.10 is nice, but it *only* supports the Doom games, so I'll
+# add an oblige-legacy4 build for the old version.
+
+# 20140213 bkw: bump BUILD to 2.
+# Makefile.unixy updated so it installs data/doom[12]_boss (thanks to Black
+# Rider for the bug report). Also get rid of +x permissions on the data files
+# in /usr/share.
+
+PRGNAM=oblige
+VERSION=${VERSION:-7.70}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_SBo}
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i586 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+if [ "$ARCH" = "i586" ]; then
+  SLKCFLAGS="-O2 -march=i586 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+  LIBDIRSUFFIX="64"
+else
+  SLKCFLAGS="-O2"
+  LIBDIRSUFFIX=""
+fi
+
+set -e
+
+SRCVER=${VERSION//./}
+SRCNAM="Oblige" # grrrr!
+
+rm -rf $PKG
+mkdir -p $TMP $PKG/usr/bin $PKG/usr/share/$PRGNAM $OUTPUT
+cd $TMP
+rm -rf ${SRCNAM}-${VERSION}-source
+
+# script supports 6.x and 7.x. author switched from .tar.gz to .zip
+# for 7.x, so check for both.
+if [ -e $CWD/$PRGNAM-$SRCVER-source.zip ]; then
+  unzip $CWD/$PRGNAM-$SRCVER-source.zip
+else
+  tar xvf $CWD/$PRGNAM-$SRCVER-source.tar.gz
+fi
+
+cd ${SRCNAM}-${VERSION}-source
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 -o -perm 511 \) \
+ -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
+ -exec chmod 644 {} \;
+
+# 'make install' would install the .desktop and icon to /usr, not PREFIX.
+sed -i '/xdg-/d' Makefile
+
+# if there's no prefabs/ dir, don't try to install it. doing it this
+# way allows this script to still build oblige 7.666, if needed.
+if [ ! -d prefabs ]; then
+  sed -i '/\/prefabs/d' Makefile
+fi
+
+make PREFIX=/usr OPTIMISE="$SLKCFLAGS"
+make install PREFIX=$PKG/usr
+
+# man page written for this build (based on --help output)
+mkdir -p $PKG/usr/man/man6
+gzip -9c < $CWD/$PRGNAM.6 > $PKG/usr/man/man6/$PRGNAM.6.gz
+
+# Starting with 6.20, upstream includes a .desktop and icon.
+mkdir -p $PKG/usr/share/pixmaps $PKG/usr/share/applications
+cat misc/icon_128x128.png > $PKG/usr/share/pixmaps/$PRGNAM.png
+cat misc/$PRGNAM.desktop > $PKG/usr/share/applications/$PRGNAM.desktop
+
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+rm -f INSTALL.txt # don't need compile instruction in bin package
+sed -i 's,\r,,' *.txt
+cp -a *.txt $PKG/usr/doc/$PRGNAM-$VERSION
+# 6.x and 7.50 have extra docs, 7.666 doesn't:
+if [ -d doc ]; then
+  sed -i 's,\r,,' doc/*.txt
+  cp doc/*.txt $PKG/usr/doc/$PRGNAM-$VERSION
+fi
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+cat $CWD/slack-required > $PKG/install/slack-required
+cat $CWD/doinst.sh > $PKG/install/doinst.sh
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}

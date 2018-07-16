@@ -1,0 +1,17 @@
+perl-MIME-Charset
+
+This package ships mainly perl module MIME::Charset
+
+MIME::Charset provides informations about character sets used for MIME
+messages on Internet.
+
+Documentation : "man MIME::Charset"
+
+Documentation in Japanese: "man POD2::JA::MIME::Charset"
+
+Optional dependencies:
+  perl-Encode-EUCJPASCII   [Extended mappings by Japanese codepages]
+  perl-Encode-JISX0213     [Additional mappings for JIS X 0213]
+  perl-Encode-HanExtra     [Additional mappings for Chinese standards]
+
+perl-MIME-Charset is a dependency of perl-Unicode-LineBreak.

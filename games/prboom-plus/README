@@ -1,0 +1,12 @@
+PrBoom+ is a Doom source port developed from the original PrBoom project.
+
+Features uncapped framerate, widescreen aspect ratios, soundfont support,
+variable gamespeed, re-record, walkcam, chasecam, full full mouselook, fov and
+other features along with full compatibility with the original Doom/Doom2
+engines.
+
+FluidSynth, needed for soundfont support, is an  optional dependency.
+
+The documentation refers to a directory into which an IWAD file (doom.wad,
+doom2.wad, tnt.wad, plutonia.wad, or the shareware doom1.wad) may be placed.
+The IWAD directory is /usr/share/games/doom.

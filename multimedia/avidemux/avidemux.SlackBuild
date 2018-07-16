@@ -1,0 +1,230 @@
+#!/bin/sh
+
+# Slackware build script for avidemux
+
+# Derived from a SlackBuild by Eric Hameleers.
+# Copyright 2009, 2010, 2011, 2013  Eric Hameleers, Eindhoven, NL
+# Copyright 2015 John Vogel Corning, NY USA
+# Copyright 2017-2018 Matteo Bernardini, Pisa, IT
+# All rights reserved.
+#
+# Redistribution and use of this script, with or without modification, is
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE AUTHOR "AS IS" AND ANY EXPRESS OR IMPLIED
+#  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+#  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO
+#  EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+#  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+#  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+#  OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+#  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+#  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+#  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+PRGNAM=avidemux
+VERSION=${VERSION:-2.7.1}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_SBo}
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i586 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+if [ "$ARCH" = "i586" ]; then
+  SLKCFLAGS="-O2 -march=i586 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+  LIBDIRSUFFIX="64"
+else
+  SLKCFLAGS="-O2"
+  LIBDIRSUFFIX=""
+fi
+
+DOCS="AUTHORS License.txt COPYING scripts/automkv.py"
+
+set -e
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf ${PRGNAM}_${VERSION}
+tar xvf $CWD/${PRGNAM}_${VERSION}.tar.gz
+cd ${PRGNAM}_${VERSION}
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+  -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+
+WITH_CLI=${WITH_CLI:-YES}
+WITH_QT4=${WITH_QT4:-YES}
+WITH_GTK=${WITH_GTK:-NO}
+
+mkdir -p build_core
+cd build_core
+cmake \
+  -DCMAKE_C_FLAGS:STRING="$SLKCFLAGS" \
+  -DCMAKE_CXX_FLAGS:STRING="$SLKCFLAGS" \
+  -DCMAKE_INSTALL_PREFIX=/usr \
+  -DFAKEROOT="$PKG" \
+  ../avidemux_core
+make
+make -j 1 install DESTDIR=$PKG
+cd ..
+
+if [ "x$WITH_QT4" = "xYES" ]; then
+  mkdir -p build_qt4
+  cd build_qt4
+  cmake \
+    -DCMAKE_C_FLAGS:STRING="$SLKCFLAGS" \
+    -DCMAKE_CXX_FLAGS:STRING="$SLKCFLAGS" \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DFAKEROOT="$PKG" \
+    ../avidemux/qt4
+  make
+  make -j 1 install DESTDIR=$PKG
+  cd ..
+fi
+
+if [ "x$WITH_GTK" = "xYES" ]; then
+  mkdir -p build_gtk
+  cd build_gtk
+  cmake \
+    -DCMAKE_C_FLAGS:STRING="$SLKCFLAGS" \
+    -DCMAKE_CXX_FLAGS:STRING="$SLKCFLAGS" \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DFAKEROOT="$PKG" \
+    ../avidemux/gtk
+  make
+  make -j 1 install DESTDIR=$PKG
+  cd ..
+fi
+
+if [ "x$WITH_CLI" = "xYES" ]; then
+  mkdir -p build_cli
+  cd build_cli
+  cmake \
+    -DCMAKE_C_FLAGS:STRING="$SLKCFLAGS" \
+    -DCMAKE_CXX_FLAGS:STRING="$SLKCFLAGS" \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DFAKEROOT="$PKG" \
+    ../avidemux/cli
+  make
+  make -j 1 install DESTDIR=$PKG
+  cd ..
+fi
+
+mkdir -p build_plugins_common
+cd build_plugins_common
+  cmake \
+    -DCMAKE_C_FLAGS:STRING="$SLKCFLAGS" \
+    -DCMAKE_CXX_FLAGS:STRING="$SLKCFLAGS" \
+    -DAVIDEMUX_SOURCE_DIR="$TMP/${PRGNAM}_${VERSION}" \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DPLUGIN_UI=COMMON \
+    -DFAKEROOT="$PKG" \
+    ../avidemux_plugins
+  make
+  make -j 1 install DESTDIR=$PKG
+cd ..
+
+if [ "x$WITH_QT4" = "xYES" ]; then
+  mkdir -p build_plugins_qt4
+  cd build_plugins_qt4
+  cmake \
+    -DCMAKE_C_FLAGS:STRING="$SLKCFLAGS" \
+    -DCMAKE_CXX_FLAGS:STRING="$SLKCFLAGS" \
+    -DAVIDEMUX_SOURCE_DIR="$TMP/${PRGNAM}_${VERSION}" \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DPLUGIN_UI=QT4 \
+    -DFAKEROOT="$PKG" \
+    ../avidemux_plugins
+  make
+  make -j 1 install DESTDIR=$PKG
+  cd ..
+fi
+
+if [ "x$WITH_GTK" = "xYES" ]; then
+  mkdir -p build_plugins_gtk
+  cd build_plugins_gtk
+  cmake \
+    -DCMAKE_C_FLAGS:STRING="$SLKCFLAGS" \
+    -DCMAKE_CXX_FLAGS:STRING="$SLKCFLAGS" \
+    -DAVIDEMUX_SOURCE_DIR="$TMP/${PRGNAM}_${VERSION}" \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DPLUGIN_UI=GTK \
+    -DFAKEROOT="$PKG" \
+    ../avidemux_plugins
+  make
+  make -j 1 install DESTDIR=$PKG
+  cd ..
+fi
+
+if [ "x$WITH_CLI" = "xYES" ]; then
+  mkdir -p build_plugins_cli
+  cd build_plugins_cli
+  cmake \
+    -DCMAKE_C_FLAGS:STRING="$SLKCFLAGS" \
+    -DCMAKE_CXX_FLAGS:STRING="$SLKCFLAGS" \
+    -DAVIDEMUX_SOURCE_DIR="$TMP/${PRGNAM}_${VERSION}" \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DPLUGIN_UI=CLI \
+    -DFAKEROOT="$PKG" \
+    ../avidemux_plugins
+  make
+  make -j 1 install DESTDIR=$PKG
+  cd ..
+fi
+
+mkdir -p $PKG/usr/share/applications
+mkdir -p $PKG/usr/share/pixmaps
+if [ "x$WITH_QT4" = "xYES" ]; then
+	cat avidemux2.desktop | sed -e 's/avidemux2$/avidemux/' -e 's/2_gtk/3_qt4/' >\
+		$PKG/usr/share/applications/avidemux_qt.desktop
+fi
+if [ "x$WITH_GTK" = "xYES" ]; then
+	cat avidemux2.desktop | sed -e 's/avidemux2$/avidemux/' -e 's/2_gtk/3_gtk/' >\
+		$PKG/usr/share/applications/avidemux_gtk.desktop
+fi
+install -m644 avidemux_icon.png $PKG/usr/share/pixmaps/avidemux.png
+for sz in 16x16 32x32 48x48 64x64 ; do
+  mkdir -p $PKG/usr/share/icons/hicolor/$sz/apps
+  convert avidemux_icon.png -resize $sz \
+    $PKG/usr/share/icons/hicolor/$sz/apps/avidemux.png
+done
+
+mkdir -p $PKG/usr/man/man1
+gzip -c man/avidemux.1 > $PKG/usr/man/man1/avidemux.1.gz
+
+find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
+  | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
+
+mkdir -p $PKG/usr/doc/${PRGNAM}-${VERSION}
+cp -a $DOCS $PKG/usr/doc/${PRGNAM}-${VERSION}
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/${PRGNAM}-${VERSION}/$PRGNAM.SlackBuild
+
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+cat $CWD/slack-required > $PKG/install/slack-required
+cat $CWD/doinst.sh > $PKG/install/doinst.sh
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/${PRGNAM}-${VERSION}-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}

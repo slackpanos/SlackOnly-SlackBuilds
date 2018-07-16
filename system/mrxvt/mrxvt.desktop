@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Name=mrxvt
+GenericName=Terminal Emulator
+Exec=mrxvt
+Icon=/usr/share/pixmaps/mrxvt.png
+Terminal=false
+Type=Application
+Categories=System;TerminalEmulator;Utility;
+StartupNotify=true

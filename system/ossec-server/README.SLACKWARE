@@ -1,0 +1,23 @@
+These users and group need to be added:
+
+  groupadd -g 333 ossec
+  useradd  -u 333 -g 333 -d /var/ossec -s /bin/false ossec
+  useradd  -u 334 -g 333 -d /var/ossec -s /bin/false ossecm
+  useradd  -u 335 -g 333 -d /var/ossec -s /bin/false ossecr
+
+
+You may wish to add these lines to /etc/rc.d/rc.local to start the service:
+
+if [ -x /etc/rc.d/rc.ossec ]; then
+  /etc/rc.d/rc.ossec start
+fi
+
+You may also add these lines to /etc/rc.d/rc.local_shutdown:
+
+if [ -x /etc/rc.d/rc.ossec ]; then
+  /etc/rc.d/rc.ossec stop
+fi
+
+Remember to give executable permission to /etc/rc.d/rc.local_shutdown:
+
+  chmod 0755 /etc/rc.d/rc.local_shutdown

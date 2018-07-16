@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Name=HotShots
+Type=Application
+GenericName=Screenshot manager
+TryExec=hotshots
+Exec=hotshots 
+Categories=Utility;Graphics;
+Icon=hotshots
+MimeType=application/x-hot;

@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.
+# Line up the first '|' above the ':' following the base package name, and
+# the '|' on the right side marks the last column you can put a character in.
+# You must make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':' except on otherwise blank lines.
+
+          |-----handy-ruler------------------------------------------------------|
+codeblocks: codeblocks (a free C++ and Fortran IDE)
+codeblocks:
+codeblocks: Code::Blocks is a free C++ and Fortran IDE built to meet the most
+codeblocks: demanding needs of its users. It is designed to be very extensible
+codeblocks: and fully configurable.
+codeblocks:
+codeblocks: Homepage: http://www.codeblocks.org/
+codeblocks:
+codeblocks:
+codeblocks:
+codeblocks:

@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Firestorm Opensim Viewer
+GenericName=Second Life Opensim Client
+Icon=firestorm-opensim
+Exec=firestorm-opensim
+Terminal=false
+StartupNotify=false
+Categories=Game;ActionGame;

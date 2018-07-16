@@ -1,0 +1,5 @@
+graphviz
+libwacom
+meson
+python-evdev
+pyudev

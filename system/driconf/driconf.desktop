@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=3D Acceleration
+Comment=Change 3D Acceleration options
+Exec=driconf
+Icon=/usr/share/driconf/driconf-icon.png
+Type=Application
+Categories=GNOME;Settings;
+StartupNotify=true

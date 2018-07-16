@@ -1,0 +1,33 @@
+abcde is a frontend command-line utility (actually, a shell script)
+that grabs tracks off an audio CD, encodes them to Ogg Vorbis, MP3,
+MP2, FLAC, Opus, Speex, WAV, WavPack, Musepack, AIFF, M4A/AAC, MKA,
+Monkey's Audio and/or True Audio formats, and tags them all in one go.
+
+There are many additional features that abcde supports by installing one
+or more of these dependencies:
+
+* eyeD3           for tagging MP3 files (default)
+* id3v2           for tagging MP3 files (with ID3TAGV=id3v2.3)
+* id3             for tagging MP3 files (with ID3TAGV=id3v1)
+
+* twolame         for creating MP2 files
+* mutagen         for tagging MP2 and MP3 files (with ID3TAGV=id3v2.3
+                  and ID3V2=mid3v2)
+
+* musepack-tools  for creating Musepack files
+
+* fdkaac          for creating M4A/AAC files
+* wine            for running qaac and fhgaacenc
+
+* mac             for creating Monkey's Audio files
+* apetag          for tagging Monkey's Audio files
+
+* tta             for creating True Audio files (default)
+* ttaenc          for creating True Audio files
+
+* glyr            for downloading album art
+* mkcue           for generating cue sheets for one-album files
+* vorbisgain      for adjusting the volume of Ogg Vorbis files
+
+Set CDDBMETHOD to "cddb" if you would like to retrieve music metadata and
+album art from freedb instead of MusicBrainz.

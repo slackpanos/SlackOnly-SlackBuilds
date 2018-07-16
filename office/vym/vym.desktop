@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Exec=vym
+Name=VYM - View Your Mind
+GenericName=Planning and Brainstorming Tool
+Icon=vym
+MimeType=application/x-vym;
+Categories=Qt;Office;

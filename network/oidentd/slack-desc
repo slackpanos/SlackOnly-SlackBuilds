@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.
+# Line up the first '|' above the ':' following the base package name, and
+# the '|' on the right side marks the last column you can put a character in.
+# You must make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':' except on otherwise blank lines.
+
+       |-----handy-ruler------------------------------------------------------|
+oidentd: oidentd (an identd daemon)
+oidentd:
+oidentd: Oidentd is an ident daemon (rfc1413) that runs on Linux, FreeBSD,
+oidentd: OpenBSD and Solaris 2.x. Oidentd supports most features of pidentd
+oidentd: plus more. Most notably, oidentd allows users to specify the identd
+oidentd: response that the server will output when a successful lookup is
+oidentd: completed. Oidentd supports IP masqueraded connections on Linux, and
+oidentd: is able to forward requests to hosts that masq through the host on
+oidentd: which oidentd runs.
+oidentd:
+oidentd: Homepage: https://sourceforge.net/projects/oidentd/

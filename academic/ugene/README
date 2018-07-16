@@ -1,0 +1,65 @@
+Unipro UGENE is a multiplatform open-source software with the main
+goal of assisting molecular biologists without much expertise in
+bioinformatics to manage, analyze and visualize their data.
+
+UGENE integrates widely used bioinformatics tools within a common user
+interface. The toolkit supports multiple biological data formats and
+allows the retrieval of data from remote data sources. It provides
+visualization modules for biological objects such as:
+
+- annotated genome sequences
+- Next Generation Sequencing (NGS) assembly data
+- multiple sequence alignments
+- phylogenetic trees
+- 3D structures
+
+Most of the integrated algorithms are tuned for maximum performance by
+the usage of multithreading and special processor instructions. UGENE
+includes a visual environment for creating reusable workflows that can
+be launched on local resources or in a High Performance Computing
+(HPC) environment. UGENE is written in C++ using the Qt framework. The
+built-in plugin system and structured UGENE API make it possible to
+extend the toolkit with new functionality.
+
+CITING:
+Unipro UGENE: a unified bioinformatics toolkit
+Konstantin Okonechnikov; Olga Golosova; Mikhail Fursov; the UGENE team
+Bioinformatics 2012 28: 1166-1167
+
+EXTERNAL TOOLS
+UGENE can use and drive a number of external tools, providing a nice
+and unified GUI. These are not needed at build time, but are highly
+recommended for the complete (and extended) functionality of the
+program. All of them are available at SlackBuilds.org:
+
+- bedGraphToBigWig (Convert bedGraph to bigWig file)
+- bedtools (A powerful toolset for genome arithmetic)
+- bowtie (A short read aligner of DNA sequences)
+- bowtie2 (A tool for aligning sequencing reads)
+- bwa (Burrows-Wheeler Aligner)
+- cap3 (CAP3: A DNA sequence assembly program)
+- cistrome-CEAS (CEAS: Cis-regulatory Element Annotation System)
+- cistrome-conductGO (Find the top-n highest expressed TFs)
+- cistrome-extra (Cistrome Applications Harvard extra apps)
+- cistrome-MACS (MACS: Model-based Analysis of ChIP-Seq)
+- cistrome-mdseqpos (Cistrome Applications Harvard mdseqpos)
+- clustalo (Clustal Omega)
+- clustalw (Multiple Sequence Alignment)
+- cufflinks (A reference-guided assembler for RNA-Seq experiments)
+- cutadapt (Trim adapters from high-throughput sequencing reads)
+- fastqc (A quality control tool for high throughput sequence data)
+- HMMER (Biosequence analysis using profile hidden Markov models)
+- ncbi-blast (BLAST: Basic Local Alignment Search Tool)
+- ncbi-blast-plus (BLAST+ Command Line Applications)
+- PhyML (Phylogenetic estimation using Maximum Likelihood)
+- samtools (Sequence Alignment/Map Tools)
+- snpEff (Genetic variant annotation and effect prediction toolbox)
+- spades (SPAdes Genome Assembler)
+- spidey (mRNA-to-genomic alignment)
+- t_coffee (A multiple sequence alignment program)
+- tabix (Generic indexer for TAB-delimited genome position files )
+- tophat (Splice junction mapper for RNA-Seq reads)
+- vcftools (A program package designed for working with VCF files)
+
+Alternatively, check the program's website if you want to get them
+precompiled: http://ugene.net/external.html

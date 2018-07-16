@@ -1,0 +1,184 @@
+#!/bin/sh
+
+# Slackware build script for syslog-ng
+
+# Copyright 2010, 2012, 2013, 2016, 2017  Mario Preksavec, Zagreb, Croatia
+# All rights reserved.
+#
+# Redistribution and use of this script, with or without modification, is
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE AUTHOR "AS IS" AND ANY EXPRESS OR IMPLIED
+#  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+#  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO
+#  EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+#  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+#  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+#  OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+#  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+#  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+#  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+# Updates and extras, thanks to Janos Szigetvari, Szekesfehervar, Hungary
+
+PRGNAM=syslog-ng
+VERSION=${VERSION:-3.10.1}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_SBo}
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i586 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+if [ "$ARCH" = "i586" ]; then
+  SLKCFLAGS="-O2 -march=i586 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+  LIBDIRSUFFIX="64"
+else
+  SLKCFLAGS="-O2"
+  LIBDIRSUFFIX=""
+fi
+
+# Build withhout GeoIP support by default
+GEOIP=${GEOIP:-no}
+case "$GEOIP" in
+         yes) GEOIP='--enable-geoip' ;;
+           *) GEOIP='--disable-geoip' ;;
+esac
+
+# Build without debug information by default
+DEBUG=${DEBUG:-no}
+case "$DEBUG" in
+         yes) DEBUG='--enable-debug' ;;
+           *) DEBUG='--disable-debug' ;;
+esac
+
+# Build without SQL support by default
+SQL=${SQL:-no}
+case "$SQL" in
+         yes) SQL='--enable-sql' ;;
+           *) SQL='--disable-sql' ;;
+esac
+
+# Build without MongoDB support by default
+MONGODB=${MONGODB:-no}
+case "$MONGODB" in
+         yes) MONGODB='--enable-mongodb' ;;
+           *) MONGODB='--disable-mongodb' ;;
+esac
+
+# Build without Riemann support by default
+RIEMANN=${RIEMANN:-no}
+case "$RIEMANN" in
+         yes) RIEMANN='--enable-riemann' ;;
+           *) RIEMANN='--disable-riemann' ;;
+esac
+
+# Build without support for Java-based destinations by default
+JAVA=${JAVA:-no}
+case "$JAVA" in
+         yes) JAVA='--enable-java --enable-java-modules' ;;
+           *) JAVA='--disable-java --disable-java-modules' ;;
+esac
+
+# Build with support for UDP source-address spoofing by default
+SPOOF_SOURCE=${SPOOF_SOURCE:-no}
+case "$SPOOF_SOURCE" in
+         yes) SPOOF_SOURCE='--enable-spoof-source' ;;
+           *) SPOOF_SOURCE='--disable-spoof-source' ;;
+esac
+
+set -e
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $PRGNAM-$VERSION
+tar xvf $CWD/${PRGNAM}-$VERSION.tar.gz
+cd $PRGNAM-$VERSION
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 -o -perm 511 \) \
+ -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
+ -exec chmod 644 {} \;
+
+[ -f configure ] || ./autogen.sh
+
+CFLAGS="$SLKCFLAGS" \
+CXXFLAGS="$SLKCFLAGS" \
+./configure \
+  --prefix=/usr \
+  --libdir=/usr/lib${LIBDIRSUFFIX} \
+  --sysconfdir=/etc/syslog-ng \
+  --localstatedir=/var \
+  --with-pidfile-dir=/var/run \
+  --enable-manpages \
+  --mandir=/usr/man \
+  --docdir=/usr/doc/$PRGNAM-$VERSION \
+  --enable-dynamic-linking \
+  --with-embedded-crypto \
+  $GEOIP $DEBUG $SQL $MONGODB \
+  $RIEMANN $JAVA $SPOOF_SOURCE \
+  --build=$ARCH-slackware-linux
+
+make
+make install DESTDIR=$PKG
+
+find $PKG | xargs file | grep -e "executable" -e "shared object" | grep ELF \
+  | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
+
+find $PKG/usr/man -type f -exec gzip -9 {} \;
+for i in $( find $PKG/usr/man -type l ) ; do ln -s $( readlink $i ).gz $i.gz ; rm $i ; done
+
+# We use our own configuration and keep original as sample
+mv $PKG/etc/syslog-ng/syslog-ng.conf $PKG/etc/syslog-ng/syslog-ng.conf.example
+
+# Append .new to config files
+for i in $PKG/etc/syslog-ng/*.conf ; do mv $i $i.new ; done
+
+# Copy init script
+install -D -m0755 -oroot -groot $CWD/rc.syslog-ng $PKG/etc/rc.d/rc.syslog-ng.new
+
+# Install our own configuration and logrotate script
+install -D -m0644 -oroot -groot $CWD/syslog-ng.conf $PKG/etc/syslog-ng/syslog-ng.conf.new
+install -D -m0644 -oroot -groot $CWD/syslog-ng.logrotate $PKG/etc/logrotate.d/syslog-ng.new
+
+# This is for syslog-ng.persist file, we don't want it in /var
+mkdir -p $PKG/var/lib/syslog-ng
+
+# Cruft removal
+[ -d $PKG/usr/libexec ] && rmdir $PKG/usr/libexec
+
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+# Copy whatever documentation upstream provides
+for i in AUTHORS CONTRIBUTING* COPYING GPL* INSTALL LGPL* NEWS* README* VERSION
+  do [ -f $i ] && cp -a $i $PKG/usr/doc/$PRGNAM-$VERSION
+done
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+cat $CWD/README.SLACKWARE > $PKG/usr/doc/$PRGNAM-$VERSION/README.SLACKWARE
+
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+cat $CWD/slack-required > $PKG/install/slack-required
+cat $CWD/doinst.sh > $PKG/install/doinst.sh
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}

@@ -1,0 +1,10 @@
+libaaio is a software library providing the functionality of getch(),
+getche() and kbhit() on Linux and UNIX systems (including Mac OS
+X). It does not require an initialization (like curses) and does not
+abuse the terminal (i.e.  whenever the mode of the terminal is changed
+its state is stored so it can be restored).
+
+The software has not seen any changes since 2005, but remains useful
+primarily for initial porting of Win32 terminal programs.  This build
+installs both the static and shared libraries, as most programs using
+this library expect the former.

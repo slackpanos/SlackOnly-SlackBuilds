@@ -1,0 +1,216 @@
+#!/bin/sh
+
+# Slackware build script for zathura
+
+# Copyright 2010  Binh Nguyen <binhnguyen@fastmail.fm>
+# All rights reserved.
+#
+# Redistribution and use of this script, with or without modification, is
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE AUTHOR ''AS IS'' AND ANY EXPRESS OR IMPLIED
+#  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+#  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO
+#  EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+#  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+#  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+#  OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+#  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+#  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+#  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+# 20180102 bkw:
+# - Updated for v0.3.8. Have to do some fudging to get it to build with
+#   Slack 14.2's older glib2: upstream claims they need 2.50, but the
+#   only thing they seem to need it for is the --dependency-file option
+#   to glib-compile-resources, which turns out to be unneeded.
+
+# 20170711 bkw:
+# - BUILD=2
+# - Include API docs in package
+# - Switch to github URLs since upstream's site has been broken for 3-4
+#   days now. Side effect is, it makes it easier for my update script to
+#   let me know when there's a new release. This means adding the built
+#   man pages to SBo git (otherwise I'd have Sphinx as a dep, yuck).
+
+# 20170125 bkw:
+# - Updated for v0.3.7, poppler plugin v0.2.7
+
+# 20160725 bkw:
+# - Updated for v0.3.6
+
+# 20150511 bkw:
+# - Version bump 0.3.3. The poppler plugin is still on 0.2.5.
+# - Make the poppler plugin's pdf.so a symlink. Will do the same
+#   for zathura-pdf-mupdf, to allow switching between the two without
+#   reinstalling packages. This wouldn't have worked with older versions,
+#   due to changes in glib's g_file_test() between glib 1.x and 2.x.
+# - Upstream started using -fdiagnostics-color=always, which is only
+#   supported in newer gcc versions. Get rid of it.
+
+# Updated 20130617 by B. Watson <yalhcru@gmail.com>:
+# - Updated for v0.2.3
+
+# Updated 20120721 by B. Watson <yalhcru@gmail.com>:
+# - Updated for v0.2.0
+# - generated man pages now included by upstream, get rid of ours
+
+# Updated 20120312 by B. Watson <yalhcru@gmail.com>:
+# - Updated for v0.1.1, including poppler plugin
+# - Restore missing .desktop file and AUTHORS doc
+# - Add an icon
+# - Include generated man pages
+# - fix homepage URL
+
+PRGNAM=zathura
+VERSION=${VERSION:-0.3.8}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_SBo}
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i586 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+if [ "$ARCH" = "i586" ]; then
+  SLKCFLAGS="-O2 -march=i586 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+  LIBDIRSUFFIX="64"
+else
+  SLKCFLAGS="-O2"
+  LIBDIRSUFFIX=""
+fi
+
+set -eu
+
+# zathura no longer includes PDF support in the core. Instead it uses
+# plugins. This build includes the default PDF plugin, without which zathura
+# is completely useless.
+PLUGIN=$PRGNAM-pdf-poppler
+PLUGINVER=${PLUGINVER:-0.2.8}
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $PRGNAM-$VERSION
+tar xvf $CWD/$PRGNAM-$VERSION.tar.gz
+cd $PRGNAM-$VERSION
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 -o -perm 511 \) \
+ -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
+ -exec chmod 644 {} \;
+
+# Work around a bug in Slackware's ghostscript.
+# http://bugs.ghostscript.com/show_bug.cgi?id=692891
+#
+# Supposedly this was fixed, but I'm getting stack traces that look just
+# like those. The trouble is, if any of the plugins depends on libgs.so,
+# that library gets loaded during zathura's "scan for plugins" phase.
+# If libjpeg.so wasn't already loaded, it gets loaded and mangled by
+# libgs. This happens *before* zathura knows which plugin matches the file
+# we're trying to view. Now, the plugin is chosen based on the file's
+# mime type. If said plugin *isn't* the one using libgs, but it *does*
+# use libjpeg, *boom* segfault.
+#
+# What I found is that the postscript plugin uses libsceptre, which uses
+# libgs... and the mupdf and comicbook plugins use libjpeg.  The end result
+# is that the mupdf and cb plugins crash the first time they try to load
+# a jpeg from the pdf/cbr, *but* only if the ps plugin is installed!
+# Both plugins work fine if the ps plugin is removed.
+#
+# I found that 'export LD_PRELOAD=/usr/lib/libjpeg.so' stops the
+# segfaulting, while not affecting the ps plugin. The patch below is
+# basically just the C equivalent: use dlopen() to load libjpeg.so before
+# scanning for plugins. Yes, it's a hack, that depends on implementation
+# specific details, but the alternative would be to try and talk Pat V
+# into patching and rebuilding his ghostscript and/or libsceptre packages,
+# which he won't be doing this late in the release cycle (I wouldn't either).
+
+patch -p1 < $CWD/dlopen_hack.diff
+
+sed -i "s/-pedantic/$SLKCFLAGS/" config.mk
+sed -i '/-fdiagnostics-color/d' colors.mk
+sed -i '/--dependency-file/d' Makefile
+
+# 20170711 bkw: git tarballs don't include prebuilt man pages, and I do NOT
+# want Sphinx and its 15+ deps as a dep for this build. So:
+cp -r $CWD/man doc/_build
+
+make LIBDIR=/usr/lib$LIBDIRSUFFIX GLIB_VERSION_CHECK=0
+make install LIBDIR=/usr/lib$LIBDIRSUFFIX MANPREFIX=/usr/man DESTDIR=$PKG RSTTOMAN=""
+gzip $PKG/usr/man/man?/*.?
+
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+cp -a AUTHORS LICENSE README $PKG/usr/doc/$PRGNAM-$VERSION
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+
+# Include the API docs. Sphinx would be needed to build HTML or PDF docs, but
+# the doc sources are RST, which are perfectly human-readable already (though
+# less easy to navigate).
+cd doc
+rm -rf installation man _build [A-Z]* *.mk *.py *.txt
+cp -a * $PKG/usr/doc/$PRGNAM-$VERSION
+
+# Now build the plugin.
+cd $TMP
+
+# Hack, lets #include <zathura/document.h> in pdf.h work with an uninstalled
+# copy of zathura by saying "-I../zathura"
+rm -f $PRGNAM
+ln -s $PRGNAM-$VERSION $PRGNAM
+
+rm -rf $PLUGIN-$PLUGINVER
+tar xvf $CWD/$PLUGIN-$PLUGINVER.tar.gz
+cd $PLUGIN-$PLUGINVER
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 -o -perm 511 \) \
+ -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
+ -exec chmod 644 {} \;
+
+# ZATHURA_VERSION_CHECK=0 is required because zathura.pc isn't installed.
+
+PLUGDIR=/usr/lib$LIBDIRSUFFIX/$PRGNAM
+sed -i "s/-fPIC/$SLKCFLAGS/" config.mk
+make install \
+  VERBOSE=1 \
+  ZATHURA_INC=-I../zathura \
+  PLUGINDIR=$PLUGDIR/pdf-poppler \
+  DESTDIR=$PKG \
+  ZATHURA_GTK_VERSION=3 \
+  ZATHURA_VERSION_CHECK=0
+strip $PKG/$PLUGDIR/pdf-poppler/*.so
+
+ln -s pdf-poppler/pdf.so $PKG/$PLUGDIR/pdf.so
+
+# icon converted from https://pwmt.org/img/fav.ico
+mkdir -p $PKG/usr/share/pixmaps
+cat $CWD/$PRGNAM.png > $PKG/usr/share/pixmaps/$PRGNAM.png
+echo "Icon=$PRGNAM" >> $PKG/usr/share/applications/$PRGNAM.desktop
+
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+cat $CWD/slack-required > $PKG/install/slack-required
+cat $CWD/doinst.sh > $PKG/install/doinst.sh
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}

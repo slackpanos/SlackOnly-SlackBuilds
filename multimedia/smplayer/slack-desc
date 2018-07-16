@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.
+# Line up the first '|' above the ':' following the base package name, and
+# the '|' on the right side marks the last column you can put a character in.
+# You must make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':' except on otherwise blank lines.
+
+        |-----handy-ruler------------------------------------------------------|
+smplayer: smplayer (graphical user interface for MPlayer)
+smplayer:
+smplayer: SMPlayer is a free media player with built-in codecs that can play
+smplayer: virtually all video and audio formats. It doesn't need any external
+smplayer: codecs. Just install SMPlayer and you'll be able to play all formats
+smplayer: without the hassle to find and install codec packs.
+smplayer:
+smplayer: Homepage: https://www.smplayer.info/
+smplayer:
+smplayer:
+smplayer:

@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=BRISS - High memory
+Comment=The BRIght Snippet Sire
+Exec=/usr/bin/briss-himem %F
+Icon=briss
+Type=Application
+Terminal=false
+Categories=Office

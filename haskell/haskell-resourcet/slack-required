@@ -1,0 +1,8 @@
+ghc
+haskell-exceptions
+haskell-lifted-base
+haskell-mmorph
+haskell-monad-control
+haskell-mtl
+haskell-transformers-base
+haskell-transformers-compat

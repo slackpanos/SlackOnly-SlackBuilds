@@ -1,0 +1,93 @@
+#!/bin/sh
+
+# Slackware build script for cacti:
+
+# Copyright 2009-2012 Niels Horn, Rio de Janeiro, RJ, Brazil
+# Copyright 2015-2017 Thibaut Notteboom, Paris, FRANCE
+# All rights reserved.
+#
+# Redistribution and use of this script, with or without modification, is
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR ''AS IS'' AND ANY EXPRESS OR IMPLIED
+# WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+# EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+# OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+# OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+# ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+PRGNAM=cacti
+VERSION=${VERSION:-1.1.38}
+ARCH=noarch
+BUILD=${BUILD:-1}
+TAG=${TAG:-_SBo}
+
+DOCROOT=${DOCROOT:-/var/www/htdocs}
+PHPUSER=${PHPUSER:-root}
+PHPGROUP=${PHPGROUP:-apache}
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+set -e
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $PRGNAM-$VERSION
+tar xvf $CWD/$PRGNAM-$VERSION.tar.gz
+cd $PRGNAM-$VERSION
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+  -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+
+mkdir -p $PKG/$DOCROOT/$PRGNAM
+cp -a \
+  *.php cache cli formats images include install lib locales log mibs plugins resource rra scripts \
+  $PKG/$DOCROOT/$PRGNAM/
+chown -R $PHPUSER:$PHPGROUP $PKG/$DOCROOT/$PRGNAM
+
+# Move configuration & create symbolic link
+mkdir -p $PKG/etc/$PRGNAM
+mv $PKG/$DOCROOT/$PRGNAM/include/config.php $PKG/etc/$PRGNAM/config.php.new
+ln -sf /etc/$PRGNAM/config.php $PKG/$DOCROOT/$PRGNAM/include/config.php
+chmod 640 $PKG/etc/$PRGNAM/config.php.new
+
+# Move log file & create symbolic link
+mkdir -p $PKG/var/log
+mv $PKG/$DOCROOT/$PRGNAM/log $PKG/var/log/$PRGNAM
+touch $PKG/var/log/$PRGNAM/cacti.log.new
+ln -sf /var/log/$PRGNAM $PKG/$DOCROOT/$PRGNAM/log
+
+# Copy docs & create symbolic link
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+cp -a \
+  LICENSE README.md docs/* \
+  $PKG/usr/doc/$PRGNAM-$VERSION
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+mkdir -p $PKG/$DOCROOT/$PRGNAM/docs
+ln -sf /usr/doc/$PRGNAM-$VERSION/html $PKG/$DOCROOT/$PRGNAM/docs/html
+
+# Copy post-installation scripts to /usr/share/cacti
+mkdir -p $PKG/usr/share/$PRGNAM
+cp cacti.sql $PKG/usr/share/$PRGNAM
+
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+cat $CWD/slack-required > $PKG/install/slack-required
+cat $CWD/doinst.sh > $PKG/install/doinst.sh
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}

@@ -1,0 +1,25 @@
+mupdf is a lightweight PDF, CBZ, and XPS viewer and toolkit.
+
+The renderer in MuPDF is tailored for high quality anti-aliased graphics.
+MuPDF renders text with metrics and spacing accurate to within fractions of
+a pixel for the highest fidelity in reproducing the look of a printed page
+on screen.
+
+MuPDF is also small, fast, and yet complete. It supports PDF 1.7 with
+transparency, encryption, hyperlinks, annotations, searching and more. It
+also reads XPS and OpenXPS documents. MuPDF is written modularly, so
+features can be added on by integrators if they so desire.
+
+Notes:
+
+1. By default, mupdf is built without JavaScript support. If you want
+to try mupdf's experimental JavaScript support, build with MUJS=yes in
+the script's environment.
+
+2. Two mupdf executables are installed in /usr/bin. mupdf-x11 is the
+regular PDF viewer, and mupdf-x11-curl has support for fetching remote
+resources from the network (which may be considered a security risk).
+
+3. By default, mupdf is now built as shared libraries. If for some
+reason you need static libs instead, build with STATIC=yes in the
+script's environment. See README_shared.txt for more information.

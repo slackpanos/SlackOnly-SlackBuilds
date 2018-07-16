@@ -1,0 +1,11 @@
+fzf - A command-line fuzzy finder written in Go
+
+Vim Users: A fzf.vim plugin is installed to
+/usr/share/vim/vimfiles/plugin. If you'd rather exclude the plugin,
+or only manually enable it in your vim, you can build with:
+
+WITH_VIM=no ./fzf.SlackBuild
+
+and the plugin will be installed to /usr/share/fzf/vim/ instead.
+
+NOTE: google-go-lang is only needed at compile time - not at runtime.

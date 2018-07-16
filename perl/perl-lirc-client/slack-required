@@ -1,0 +1,4 @@
+perl-Module-Build
+perl-Moo
+perl-class-accessor
+perl-file-path-expand

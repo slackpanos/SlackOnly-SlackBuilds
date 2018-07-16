@@ -1,0 +1,106 @@
+PRGNAM="exa"
+VERSION="0.8.0"
+HOMEPAGE="https://github.com/ogham/exa"
+DOWNLOAD="https://github.com/ogham/exa/archive/v0.8.0/exa-0.8.0.tar.gz \
+          https://crates-io.s3-us-west-1.amazonaws.com/crates/aho-corasick/aho-corasick-0.5.3.crate \
+          https://crates-io.s3-us-west-1.amazonaws.com/crates/ansi_term/ansi_term-0.8.0.crate \
+          https://crates-io.s3-us-west-1.amazonaws.com/crates/bitflags/bitflags-0.9.1.crate \
+          https://crates-io.s3-us-west-1.amazonaws.com/crates/byteorder/byteorder-0.4.2.crate \
+          https://crates-io.s3-us-west-1.amazonaws.com/crates/cmake/cmake-0.1.25.crate \
+          https://crates-io.s3-us-west-1.amazonaws.com/crates/datetime/datetime-0.4.7.crate \
+          https://crates-io.s3-us-west-1.amazonaws.com/crates/env_logger/env_logger-0.3.5.crate \
+          https://crates-io.s3-us-west-1.amazonaws.com/crates/gcc/gcc-0.3.53.crate \
+          https://crates-io.s3-us-west-1.amazonaws.com/crates/getopts/getopts-0.2.14.crate \
+          https://crates-io.s3-us-west-1.amazonaws.com/crates/git2/git2-0.6.8.crate \
+          https://crates-io.s3-us-west-1.amazonaws.com/crates/glob/glob-0.2.11.crate \
+          https://crates-io.s3-us-west-1.amazonaws.com/crates/idna/idna-0.1.4.crate \
+          https://crates-io.s3-us-west-1.amazonaws.com/crates/iso8601/iso8601-0.1.1.crate \
+          https://crates-io.s3-us-west-1.amazonaws.com/crates/kernel32-sys/kernel32-sys-0.2.2.crate \
+          https://crates-io.s3-us-west-1.amazonaws.com/crates/lazy_static/lazy_static-0.2.8.crate \
+          https://crates-io.s3-us-west-1.amazonaws.com/crates/libc/libc-0.2.30.crate \
+          https://crates-io.s3-us-west-1.amazonaws.com/crates/libgit2-sys/libgit2-sys-0.6.14.crate \
+          https://crates-io.s3-us-west-1.amazonaws.com/crates/libz-sys/libz-sys-1.0.16.crate \
+          https://crates-io.s3-us-west-1.amazonaws.com/crates/locale/locale-0.2.2.crate \
+          https://crates-io.s3-us-west-1.amazonaws.com/crates/log/log-0.3.8.crate \
+          https://crates-io.s3-us-west-1.amazonaws.com/crates/matches/matches-0.1.6.crate \
+          https://crates-io.s3-us-west-1.amazonaws.com/crates/memchr/memchr-0.1.11.crate \
+          https://crates-io.s3-us-west-1.amazonaws.com/crates/natord/natord-1.0.9.crate \
+          https://crates-io.s3-us-west-1.amazonaws.com/crates/nom/nom-1.2.4.crate \
+          https://crates-io.s3-us-west-1.amazonaws.com/crates/num-traits/num-traits-0.1.40.crate \
+          https://crates-io.s3-us-west-1.amazonaws.com/crates/num_cpus/num_cpus-1.6.2.crate \
+          https://crates-io.s3-us-west-1.amazonaws.com/crates/number_prefix/number_prefix-0.2.7.crate \
+          https://crates-io.s3-us-west-1.amazonaws.com/crates/pad/pad-0.1.4.crate \
+          https://crates-io.s3-us-west-1.amazonaws.com/crates/percent-encoding/percent-encoding-1.0.0.crate \
+          https://crates-io.s3-us-west-1.amazonaws.com/crates/pkg-config/pkg-config-0.3.9.crate \
+          https://crates-io.s3-us-west-1.amazonaws.com/crates/redox_syscall/redox_syscall-0.1.31.crate \
+          https://crates-io.s3-us-west-1.amazonaws.com/crates/regex/regex-0.1.80.crate \
+          https://crates-io.s3-us-west-1.amazonaws.com/crates/regex-syntax/regex-syntax-0.3.9.crate \
+          https://crates-io.s3-us-west-1.amazonaws.com/crates/scoped_threadpool/scoped_threadpool-0.1.7.crate \
+          https://crates-io.s3-us-west-1.amazonaws.com/crates/term_grid/term_grid-0.1.6.crate \
+          https://crates-io.s3-us-west-1.amazonaws.com/crates/term_size/term_size-0.3.0.crate \
+          https://crates-io.s3-us-west-1.amazonaws.com/crates/thread-id/thread-id-2.0.0.crate \
+          https://crates-io.s3-us-west-1.amazonaws.com/crates/thread_local/thread_local-0.2.7.crate \
+          https://crates-io.s3-us-west-1.amazonaws.com/crates/unicode-bidi/unicode-bidi-0.3.4.crate \
+          https://crates-io.s3-us-west-1.amazonaws.com/crates/unicode-normalization/unicode-normalization-0.1.5.crate \
+          https://crates-io.s3-us-west-1.amazonaws.com/crates/unicode-width/unicode-width-0.1.4.crate \
+          https://crates-io.s3-us-west-1.amazonaws.com/crates/url/url-1.5.1.crate \
+          https://crates-io.s3-us-west-1.amazonaws.com/crates/users/users-0.5.3.crate \
+          https://crates-io.s3-us-west-1.amazonaws.com/crates/utf8-ranges/utf8-ranges-0.1.3.crate \
+          https://crates-io.s3-us-west-1.amazonaws.com/crates/vcpkg/vcpkg-0.2.2.crate \
+          https://crates-io.s3-us-west-1.amazonaws.com/crates/winapi/winapi-0.2.8.crate \
+          https://crates-io.s3-us-west-1.amazonaws.com/crates/winapi-build/winapi-build-0.1.1.crate \
+          https://crates-io.s3-us-west-1.amazonaws.com/crates/zoneinfo_compiled/zoneinfo_compiled-0.4.7.crate"
+MD5SUM="9024cabd9346fc3b3694e3a36f01e60d \
+        df727d9f2986c9874bec190bbc9f0021 \
+        f715ae93f15bac515273f287af9d130b \
+        8db34042da9ec719905b996a5b7182e1 \
+        9601b4fb33dec3dfc2427447b7bfe800 \
+        8f41a0f8569a596728890a1db27f5118 \
+        244e19eb0ab4ad90aa523890f7104465 \
+        27d9427d2f98d6024fd8d91ba50becef \
+        cd77c8af3ff188c7f4a697c8e228b17c \
+        6d59f4fa29cab7bcc7ea7e0c8f96e27d \
+        b7c75834ae41cd8ae0fa8f77c9d467c7 \
+        f8ece52bd2dc2019f8ccc8401d259ecf \
+        7c311938b4bdbd1e0a7f0afe0864e24f \
+        4867b6387128434a377e6ab91ea65af8 \
+        9d033cc2daa6924420a4a89e6705773f \
+        4f1b30ca715275fdbc0696a8fb60c850 \
+        2276e12441afd49488c69c45f5af1392 \
+        eccb87bae9484a576843a9af1b149739 \
+        ccd80468b385ca0eed5c70ac9ff0eb27 \
+        4b6711425b661ef923c9ff3ef9ba8c67 \
+        3aeec0abc69e407a94677199cd6a0b4b \
+        91f355db69eb1b80980ef8a7436fbc2b \
+        6a8e1bfad0f908afae0d0ca9941bd411 \
+        5a9b94ba54ea1f52f2a496ba982e3282 \
+        3796b5abe0f8c5f3a9e9441c5757a52c \
+        0d824de5c73b72433dedb16ad52e3a9e \
+        393ca202bd5c4304c3ea90fb5cc7617f \
+        ee9160e4e5f6bc37082515274324f88e \
+        c1f101feae32400220f6a667c3258365 \
+        f6403cafe6a20349d62ceb224a644092 \
+        5dc94c21d86b663e4a1a65b47134f6c5 \
+        e08cdbd749dde894cf8ed5fe8cf54ab8 \
+        c76d9e4def697bf23faf4d2b79aac458 \
+        797f26b635bbc56fdf5ef1cc3883f259 \
+        472037f104fd6d766b68f0c8f68f309f \
+        9d2431826b200515c6f9ee1aca04db5a \
+        ef6c6bda7a4b8de56b53329783b7976c \
+        cbd02f4b3f041a51789a0a22163e482c \
+        228d6ac2570bd4b88b0cc2a7729b493e \
+        f403bbb812ce1a2d9270d9159cf9e8d3 \
+        c658f9f53055b9326b7fb214acc9858a \
+        4576769468adf019f6500d3a84b7f68c \
+        bb21a839ce735f8d429b9e8ad8b2bc6e \
+        47fafd4449f5a25dd44083d025e5c1ad \
+        075bda329483078c4a57eb6988c6a31a \
+        ce928aff50b1256ea43cb94ecc4cb017 \
+        b44489eb4799c4fabac3fceb48de54f7 \
+        c900e7dbce808ff8ced375077b17a163 \
+        872af6020ad0bc24d439a8d0a26d7782"
+DOWNLOAD_x86_64=""
+MD5SUM_x86_64=""
+REQUIRES="rust"
+MAINTAINER="Andrew Clemons"
+EMAIL="andrew.clemons@gmail.com"

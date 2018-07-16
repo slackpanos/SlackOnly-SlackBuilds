@@ -1,0 +1,13 @@
+haskell-asn1-encoding
+haskell-asn1-types
+haskell-byteable
+haskell-crypto-pubkey
+haskell-crypto-pubkey-types
+haskell-cryptohash
+haskell-data-default-class
+haskell-hourglass
+haskell-mtl
+haskell-network
+haskell-pem
+haskell-x509
+haskell-x509-store

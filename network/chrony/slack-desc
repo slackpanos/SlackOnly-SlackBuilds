@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.
+# Line up the first '|' above the ':' following the base package name, and
+# the '|' on the right side marks the last column you can put a character in.
+# You must make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':' except on otherwise blank lines.
+
+      |-----handy-ruler------------------------------------------------------|
+chrony: chrony (maintains accuracy of the real time clock via NTP)
+chrony:
+chrony: chrony is a versatile implementation of the Network Time Protocol.
+chrony: It can synchronise the system clock with NTP servers, reference
+chrony: clocks (e.g. GPS receiver), and manual input using wristwatch and
+chrony: keyboard. It can also operate as an NTPv4 (RFC 5905) server and peer
+chrony: to provide a time service to other computers in the network.
+chrony:
+chrony: Homepage: https://chrony.tuxfamily.org/
+chrony:
+chrony:

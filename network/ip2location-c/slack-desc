@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.
+# Line up the first '|' above the ':' following the base package name, and
+# the '|' on the right side marks the last column you can put a character in.
+# You must make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':' except on otherwise blank lines.
+
+             |-----handy-ruler------------------------------------------------------|
+ip2location-c: ip2location-c (Geolocate IP library)
+ip2location-c:
+ip2location-c: IP2Location C library enables the user to find the country, region,
+ip2location-c: city, coordinates, zip code, time zone, ISP, domain name, connection
+ip2location-c: type, area code, weather, MCC, MNC, mobile brand name, elevation and
+ip2location-c: usage type that any IP address or hostname originates from. It has
+ip2location-c: been optimized for speed and memory utilization. Developers can use
+ip2location-c: the API to query all IP2Location binary databases for IPv4 and
+ip2location-c: IPv6 address.
+ip2location-c:
+ip2location-c: Homepage: http://www.ip2location.com/c.aspx

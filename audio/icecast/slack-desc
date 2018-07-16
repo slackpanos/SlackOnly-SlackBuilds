@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.
+# Line up the first '|' above the ':' following the base package name, and
+# the '|' on the right side marks the last column you can put a character in.
+# You must make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':' except on otherwise blank lines.
+
+       |-----handy-ruler------------------------------------------------------|
+icecast: icecast (streaming media server)
+icecast:
+icecast: Icecast is a streaming media server which currently supports
+icecast: Ogg (Vorbis and Theora), Opus, WebM and MP3 audio streams. It can
+icecast: be used to create an Internet radio station or a privately running
+icecast: jukebox and many things in between. It is very versatile in that
+icecast: new formats can be added relatively easily and supports open
+icecast: standards for commuincation and interaction.
+icecast:
+icecast: Homepage: http://icecast.org/
+icecast:

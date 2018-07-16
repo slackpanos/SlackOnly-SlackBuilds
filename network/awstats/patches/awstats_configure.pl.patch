@@ -1,0 +1,43 @@
+--- tools/awstats_configure.pl.orig	2017-04-03 21:17:54.645112534 -0500
++++ tools/awstats_configure.pl	2017-04-03 21:22:25.593441681 -0500
+@@ -27,11 +27,11 @@
+ $AWSTATS_MODEL_CONFIG
+ $AWSTATS_DIRDATA_PATH
+ /;
+-$AWSTATS_PATH='';
+-$AWSTATS_ICON_PATH='/usr/local/awstats/wwwroot/icon';
+-$AWSTATS_CSS_PATH='/usr/local/awstats/wwwroot/css';
+-$AWSTATS_CLASSES_PATH='/usr/local/awstats/wwwroot/classes';
+-$AWSTATS_CGI_PATH='/usr/local/awstats/wwwroot/cgi-bin';
++$AWSTATS_PATH='@DOCROOT@/awstats';
++$AWSTATS_ICON_PATH='$AWSTATS_PATH/wwwroot/icon';
++$AWSTATS_CSS_PATH='$AWSTATS_PATH/wwwroot/css';
++$AWSTATS_CLASSES_PATH='$AWSTATS_PATH/wwwroot/classes';
++$AWSTATS_CGI_PATH='$AWSTATS_PATH/wwwroot/cgi-bin';
+ $AWSTATS_MODEL_CONFIG='/etc/awstats/awstats.model.conf';		# Used only when configure ran on linux
+ $AWSTATS_DIRDATA_PATH='/var/lib/awstats';						# Used only when configure ran on linux
+ 
+@@ -305,7 +305,7 @@
+ print "\n-----> Running OS detected: $OSLib{$OS}\n";
+ 
+ if ($OS eq 'linux') {
+-	$AWSTATS_PATH=`pwd`; $AWSTATS_PATH =~ s/[\r\n]//;
++	$AWSTATS_PATH =~ s/[\r\n]//;
+ 	$AWSTATS_PATH=~s/tools[\\\/]?$//;
+ 	$AWSTATS_PATH=~s/[\\\/]$//;
+ 	if ($AWSTATS_PATH ne '/usr/local/awstats') {
+@@ -653,7 +653,13 @@
+ # ----------------------------------
+ if ($WebServerChanged) {
+ 	if ($OS eq 'linux') 	{
+-        if (-f "/etc/debian_version") {
++	if (-f "/etc/slackware-version") {
++	    # We are on Slackware :)
++		my $command="/etc/rc.d/rc.httpd restart";
++		print "\n-----> Restart Web server with '$command'\n";
++		    my $ret=`$command`;
++		    print "$ret";
++	} elsif (-f "/etc/debian_version") {
+             # We are on debian
+        	 	my $command="/etc/init.d/apache restart";
+     		print "\n-----> Restart Web server with '$command'\n";

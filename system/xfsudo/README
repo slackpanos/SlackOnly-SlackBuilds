@@ -1,0 +1,7 @@
+xfsudo - run graphical applications as superuser using sudo
+
+Uses zenity to create the dialog box and sudo as backend to
+run the program as root.
+
+NOTE: for this to work you need to put your user in the
+sudoers file (see "man visudo").

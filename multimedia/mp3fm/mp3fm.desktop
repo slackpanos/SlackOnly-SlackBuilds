@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Mp3fm (Pack Songs)
+Comment=Pack Songs
+Exec=mp3fm
+Icon=mp3fm
+Terminal=false
+Type=Application
+Categories=Audio;AudioVideo;Music

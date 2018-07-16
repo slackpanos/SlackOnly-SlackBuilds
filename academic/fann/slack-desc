@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.
+# Line up the first '|' above the ':' following the base package name, and
+# the '|' on the right side marks the last column you can put a character in.
+# You must make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':' except on otherwise blank lines.
+
+    |-----handy-ruler------------------------------------------------------|
+fann: fann (Fast Artificial Neural Networks)
+fann:
+fann: Fast Artificial Neural Network Library is a free open source neural
+fann: network library, which implements multilayer artificial neural
+fann: networks in C with support for both fully connected and sparsely
+fann: connected networks. Cross-platform execution in both fixed and
+fann: floating point are supported. It includes a framework for easy
+fann: handling of training data sets. It is easy to use, versatile,
+fann: well documented, and fast. Bindings to more than 15 programming
+fann: languages are available.
+fann: Homepage: http://leenissen.dk/fann/wp/

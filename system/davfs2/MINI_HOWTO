@@ -1,0 +1,93 @@
+HOW TO CONNECT WITH A WEBDAV SERVER WITH THE DAVF2 APPLICATION
+
+In this HOWTO, the user is named "chris"
+Amend as required for your choice of username.
+
+1. Login as root
+
+2. Define a davfs2 group and user:
+
+	# groupadd -g 230 davfs2
+	# useradd -u 230 -d /var/cache/davfs2 -g davfs2 -s /bin/false davfs2
+
+3. Build and install davfs2 as usual.
+
+4. Add the user if not already defined. My user shall be called chris, so:
+
+	# adduser chris
+   
+   Read the Slackbook for more details on adduser, choose default settings BUT:
+   with the default group list add also davfs2:
+
+	Press ENTER to continue without adding any additional groups
+	Or press the UP arrow to add/select/edit additional groups
+        :  audio cdrom floppy plugdev video power netdev lp scanner davfs2
+
+   If the user was already defined, then add davfs2 to the groups:
+	
+	# usermod -aG davfs2 chris
+
+5. Edit /etc/fstab with the following line:
+	WEBDAV_SERVER_URL		mount_point		davfs	noauto,user	0	0
+	
+	For example:
+	https://example.org/chris	/home/chris/mnt/dav   	davfs   noauto,user	0	0
+
+6. logout
+
+7. Login again as your davfs user ("chris" in my case).
+
+8. 	$ mkdir -p $HOME/.davfs2/certs/private/ $HOME/mnt/dav
+
+9. Move the certificate to $HOME/davfs2/certs/private and restrict the permission to rw-------:
+        For example:
+
+	$ mv CERTIFICATE.PFX	$HOME/.davfs2/certs/private/
+	$ chmod 600 $HOME/.davfs2/certs/private/CERIFICATE.PFX
+
+10. Optionally: Copy the system configuration file. There are a lot of
+    interesting comments in these files that might be helpful.
+
+	$ cp /usr/share/davfs2/* $HOME/.davfs2/
+
+11. Edit $HOME/.davfs2/davfs2.conf with the following line:
+
+	clientcert	~/.davfs2/certs/private/CERTIFICATE.PFX
+
+   Read: 
+
+	$ man davfs2.conf 
+
+   for all the details and options. Tests have shown that you might need more
+   than the line above, so you may want to read about other interesting
+   parameters, e.g.:
+
+        add_header	Translate F
+
+12. Edit $HOME/.davfs2/secrets with the following 2 lines:
+
+	/home/chris/mnt/dav		username	password
+	CERTIFICATE.PFX			passphrase
+
+    The username and password are relevant to the Webdav server, not for the
+    local account.
+    passphrase is the password for the PFX certificate
+    You should obtain all these from the Webdav server Administrator
+
+13. Restrict permssion for $HOME/.davfs2/secrets to rw-------:
+
+ 	$ chmod 600 $HOME/.davfs2/secrets
+
+14. Mount the davfs service on $HOME/mnt/dav 
+
+	$ mount $HOME/mnt/dav
+
+    You should be able to see your WEBDAV server on $HOME/mnt/dav/
+
+15. When you would like to disconnect:
+
+	$ umount $HOME/mnt/dav
+
+    You should get a similar response (the pid number is random):
+
+	/sbin/umount.davfs: waiting while mount.davfs (pid 5700) synchronizes the cache .. OK

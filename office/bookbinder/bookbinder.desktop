@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Exec=bookbinder
+Icon=bookbinder
+StartupNotify=false
+Categories=Utility;Java;
+Name=Bookbinder
+Comment=Bookbinder is a program that will convert a PDF document into signatures suitable for traditional bookbinding.

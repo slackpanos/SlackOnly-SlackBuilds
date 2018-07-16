@@ -1,0 +1,18 @@
+Clementine is a modern music player and library organiser. Clementine is a
+port of Amarok 1.4, with some features rewritten to take advantage of Qt4.
+
+Features:
+* Search and play your local music library
+* Listen to internet radio from Last.fm and SomaFM
+* Edit tags on MP3 and OGG files, organise your music
+* Cross-platform - works on Windows, Mac OS X and Linux
+* Native desktop notifications on Linux (libnotify) and Mac OS X (Growl)
+
+Optional dependencies:
+gst-plugins-bad (for http support)
+gst-plugins-ugly (for mp3 support)
+gst-libav (for m4a support)
+gst0-ffmpeg (for various decoding support)
+sparsehash (for various online services)
+libspotify and libqca (for Spotify support) (not on SBo)
+vlc

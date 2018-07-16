@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.
+# Line up the first '|' above the ':' following the base package name, and
+# the '|' on the right side marks the last column you can put a character in.
+# You must make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':' except on otherwise blank lines.
+
+         |-----handy-ruler------------------------------------------------------|
+wmSunMoon: wmSunMoon (Window Maker Sun, Moon, and time dockable application)
+wmSunMoon:
+wmSunMoon: wmSunMoon displays Sun and Moon rise and set times as well as
+wmSunMoon: the Moon phase.  Around sunrise and sunset it emulates the civil
+wmSunMoon: twilight and golden hour effects.  It can also display the current
+wmSunMoon: time, the offset for the civil twilight and golden hour, and the
+wmSunMoon: percentage of the lunar cycle.  Unlike the other dockable
+wmSunMoon: applications it offers also a text mode displaying a lot of data on
+wmSunMoon: the console.
+wmSunMoon: Enter the valid latitude and longitude in order to display the valid
+wmSunMoon: data.  If necessary enter the local and distant time zones names.

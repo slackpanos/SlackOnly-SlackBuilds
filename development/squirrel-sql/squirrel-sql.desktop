@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Exec=squirrel-sql
+TryExec=squirrel-sql
+Icon=squirrel-sql
+Terminal=false
+Name=SQuirreL
+GenericName=SQL Client
+Categories=Development;
+Type=Application
+StartupNotify=false

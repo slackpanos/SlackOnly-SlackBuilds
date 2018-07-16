@@ -1,0 +1,11 @@
+--- amavisd-release.orig	2016-04-26 22:59:53.924900846 -0500
++++ amavisd-release	2016-04-26 23:04:48.577242990 -0500
+@@ -87,7 +87,7 @@
+   $log_level = 1;
+ # $socketname = '127.0.0.1:9998';
+ # $socketname = '[::1]:9998';
+-  $socketname = '/var/amavis/amavisd.sock';
++  $socketname = '/var/run/amavis/amavisd.sock';
+ 
+ ### END OF USER CONFIGURABLE
+ }

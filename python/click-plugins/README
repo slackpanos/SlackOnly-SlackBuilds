@@ -1,0 +1,4 @@
+click-plugins (extension to click)
+
+An extension module for click to enable registering CLI commands via
+setuptools entry-points.

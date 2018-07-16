@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=BRISS
+Comment=The BRIght Snippet Sire
+Exec=/usr/bin/briss %F
+Icon=briss
+Type=Application
+Terminal=false
+Categories=Office

@@ -1,0 +1,90 @@
+#!/bin/sh
+
+# Slackware build script for murrine-themes
+
+# Copyright 2011-2018  Petar Petrov slackalaxy@gmail.com
+# All rights reserved.
+#
+# Redistribution and use of this script, with or without modification, is
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE AUTHOR "AS IS" AND ANY EXPRESS OR IMPLIED
+#  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+#  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO
+#  EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+#  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+#  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+#  OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+#  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+#  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+#  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+# Many thanks to Debian and ROSA Linux for bundling these themes together!
+# Note about the version. The script combines the themes in Debian (version
+# 0.98.11) with the themes from ROSA Linux (version 2.0), therefore we pack:
+# 0.98.11 + 2.0 = 2.98.11. We also include the default Xfwm Murrina theme:
+# http://xfce-look.org/content/show.php/Murrine++Xfwm+Theme?content=43083
+
+PRGNAM=murrine-themes
+ORIGINAL=Murrine # Default theme for XFWM
+VERSION=${VERSION:-2.98.11} # Version of our package
+DEBIVER=${DEBIVER:-0.98.11} # Version of Debian's package
+ROSAVER=${ROSAVER:-2.0} # Version of ROSA's package
+BUILD=${BUILD:-1}
+TAG=${TAG:-_SBo}
+
+ARCH=noarch
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+set -e
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $PRGNAM-$VERSION
+mkdir -p $PRGNAM-$VERSION
+cd $PRGNAM-$VERSION
+
+# Debian's themes.
+tar xvf $CWD/${PRGNAM}_${DEBIVER}.tar.xz
+
+# Default Xfwm theme. Let's extract it together with Debian's themes.
+tar xvf $CWD/${ORIGINAL}Xfwm.tar.bz2 -C $PRGNAM/usr/share/themes
+
+# Several extra themes from ROSA. Place them with the rest.
+rpm2cpio $CWD/$PRGNAM-$ROSAVER-9.src.rpm | cpio -imdv
+lzma -cd Murreza.tar.lzma | tar xvf -
+lzma -cd MurrinaOransun.tar.lzma | tar xvf -
+lzma -cd MurrinaTango.tar.lzma | tar xvf -
+
+cp -a \
+ Murreza/* MurrinaOransun MurrinaTango \
+$PRGNAM/usr/share/themes
+
+cd $PRGNAM
+chown -R root:root .
+# Zap Debian's executable .png and .xpm files :)
+find -L . \
+ -type d -exec chmod 755 {} \; -o \
+ -type f -exec chmod 644 {} \;
+
+mkdir -p $PKG/usr/share/themes
+cp -a usr/share/themes/* $PKG/usr/share/themes
+
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+cp -a debian/{changelog,copyright,README} $PKG/usr/doc/$PRGNAM-$VERSION
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+cat $CWD/slack-required > $PKG/install/slack-required
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}

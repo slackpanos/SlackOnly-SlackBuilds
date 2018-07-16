@@ -1,0 +1,18 @@
+diff -Nur lxi-tools-1.20.orig/src/gui/lxi-gui/Makefile.am lxi-tools-1.20/src/gui/lxi-gui/Makefile.am > Makefile.am.diff
+--- lxi-tools-1.20.orig/src/gui/lxi-gui/Makefile.am	2018-02-08 17:12:32.000000000 -0600
++++ lxi-tools-1.20/src/gui/lxi-gui/Makefile.am	2018-03-18 07:57:42.523615101 -0500
+@@ -13,11 +13,12 @@
+ QT_SELECT ?= 5
+ 
+ Makefile.qmake: lxi-gui.pro
+-	$(QTCHOOSER) -run-tool=qmake -qt=$(QT_SELECT) -makefile -o Makefile.qmake lxi-gui.pro \
++	$(QMAKE) -makefile -o Makefile.qmake lxi-gui.pro \
+ 		QT_INCDIR="$(SNAPCRAFT_STAGE)/$(includedir)" \
+ 		QT_LIBDIR="$(SNAPCRAFT_STAGE)/$(libdir)" \
+ 		SNAPCRAFT="$(SNAPCRAFT)" \
+-		$(QMAKE_ARGUMENTS)
++		$(QMAKE_ARGUMENTS) \
++		LIBS="-lncurses"
+ 
+ all-local: Makefile.qmake
+ 	$(MAKE) -f Makefile.qmake $(AM_MAKEFLAGS) all

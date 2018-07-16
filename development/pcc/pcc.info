@@ -1,0 +1,12 @@
+PRGNAM="pcc"
+VERSION="1.1.0"
+HOMEPAGE="http://pcc.ludd.ltu.se/"
+DOWNLOAD="http://pcc.ludd.ltu.se/ftp/pub/pcc-releases/pcc-1.1.0.tgz \
+          http://pcc.ludd.ltu.se/ftp/pub/pcc-releases/pcc-libs-1.1.0.tgz"
+MD5SUM="1c0f22440753075d64f9f2c6ed0e8278 \
+        360c157bbf6a7a931c4760ccf4ad704a"
+DOWNLOAD_x86_64=""
+MD5SUM_x86_64=""
+REQUIRES=""
+MAINTAINER="B. Watson"
+EMAIL="yalhcru@gmail.com"

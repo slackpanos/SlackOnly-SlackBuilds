@@ -1,0 +1,68 @@
+#!/bin/sh
+
+# Slackware build script for intel-microcode
+
+# Copyright 2018 Andrzej Telszewski, Banie
+# All rights reserved.
+#
+# Redistribution and use of this script, with or without modification, is
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE AUTHOR "AS IS" AND ANY EXPRESS OR IMPLIED
+#  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+#  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO
+#  EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+#  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+#  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+#  OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+#  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+#  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+#  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+PRGNAM=intel-microcode
+SRCNAM=microcode
+VERSION=${VERSION:-20180312}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_SBo}
+ARCH=noarch
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+set -e
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $SRCNAM-$VERSION
+
+mkdir $SRCNAM-$VERSION
+tar xvf $CWD/$SRCNAM-$VERSION.tgz -C $SRCNAM-$VERSION
+cd $SRCNAM-$VERSION
+chown root:root microcode.dat
+chmod 0644      microcode.dat
+
+mkdir -p $PKG/lib/firmware
+cp -a microcode.dat $PKG/lib/firmware
+
+if [ -x /usr/sbin/iucode_tool ]; then
+  mkdir -p $PKG/lib/firmware/intel-ucode
+  /usr/sbin/iucode_tool -v --list-all -K$PKG/lib/firmware/intel-ucode microcode.dat
+  mkdir -p $PKG/boot
+  /usr/sbin/iucode_tool -v --write-earlyfw=$PKG/boot/intel-ucode.cpio microcode.dat
+fi
+
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+cat releasenote > $PKG/usr/doc/$PRGNAM-$VERSION/RELEASE_NOTE
+
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}

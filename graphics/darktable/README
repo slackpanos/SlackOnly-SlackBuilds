@@ -1,0 +1,35 @@
+Darktable is a virtual lighttable and darkroom for photographers.
+It manages your digital negatives in a database and lets you view them
+through a zoomable lighttable.  It also enables you to develop raw images
+and enhance them.  This project tries to fill the gap between the many
+excellent existing free raw converters and image management tools (such
+as ufraw or f-spot).
+
+
+i686 build
+
+The Darktable project strongly recommends that you should build and run
+darktable on x86_64 if possible.  The i686 build will not give you a
+satisfactory user experience.  As an absolute minimum, your processor
+must support SSE2 instructions (i.e. Pentium 4 or higher, or Athlon 64
+or higher).
+
+
+Optional dependencies
+
+GraphicsMagick - for importing a wide range of non-RAW image formats
+libwebp        - for exporting images in WebP format
+flickcurl      - for exporting images to Flickr
+json-glib      - for exporting images to Facebook
+colord         - for colour profile management
+colord-gtk     - for colour profile management
+osm-gps-map    - for map georeferencing
+jsonschema     - for checking noise profiles
+
+If you have nVidia or AMD/ATI graphics with more than 1Gb of memory,
+nvidia-driver (or nvidia-legacy340/304-driver) or amd-app-sdk is an
+optional runtime dependency. Darktable will then detect and use the
+OpenCL capability of your graphics hardware for faster processing.
+See the Darktable User Manual, Section 10.2, for more details (in
+particular, if you have an older AMD/ATI graphics card, see Section
+10.2.6).

@@ -1,0 +1,9 @@
+perl-Archive-Extract
+perl-DBD-SQLite
+perl-DBIx-Simple
+perl-Log-Message
+perl-Module-Pluggable
+perl-Object-Accessor
+perl-Package-Constants
+perl-Term-ReadLine-Gnu
+perl-Term-UI

@@ -1,0 +1,7 @@
+perl-Crypt-OpenSSL-DSA
+perl-Crypt-OpenSSL-DSA
+perl-Crypt-OpenSSL-EC
+perl-Crypt-OpenSSL-ECDSA
+perl-Crypt-OpenSSL-RSA
+perl-Digest-GOST
+perl-net-dns

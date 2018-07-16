@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.
+# Line up the first '|' above the ':' following the base package name, and
+# the '|' on the right side marks the last column you can put a character in.
+# You must make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':' except on otherwise blank lines.
+
+            |-----handy-ruler------------------------------------------------------|
+wine-staging: wine-staging (Wine Staging is the testing area of winehq.org)
+wine-staging:
+wine-staging: It contains bug fixes and features, which have not been integrated
+wine-staging: into the development branch yet. The idea of Wine Staging is to
+wine-staging: provide experimental features faster to end users and to give
+wine-staging: developers the possibility to discuss and improve their patches
+wine-staging: before they are integrated into the main branch.
+wine-staging:
+wine-staging: Homepage: https://wiki.winehq.org/Wine-Staging
+wine-staging:
+wine-staging:

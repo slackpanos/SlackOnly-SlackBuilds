@@ -1,0 +1,87 @@
+#!/bin/sh
+
+# Slackware build script for cc65
+
+# Written by B. Watson (yalhcru@gmail.com)
+
+# Licensed under the WTFPL. See http://www.wtfpl.net/txt/copying/ for details.
+
+# 20180103 bkw:
+# - Update for 2.16_20180102, git commit 040134e7.
+# - "prefix" renamed to "PREFIX" in src/Makefile. For now, set both in
+#   the make command, so this script can still build the previous version
+#   if someone needs it.
+
+# 20170703 bkw:
+# - Update for 2.16_20170630. Upstream still hasn't done a release, but
+#   again there's lots of development.
+# - My self-hosted source tarball now includes the HTML documentation. This
+#   script used to build it, but -current's linuxdoc-tools chokes on it,
+#   and fixing it would require me a week or two probably. So, for now
+#   anyway, the tarball includes docs that were built on 14.2.
+
+# 20170129 bkw:
+# - Update for v2.15_20170126, aka git 6878ede. Upstream hasn't done
+#   a release since 2013 or so, but there's been lots of development.
+#   Script modified enough that it can no longer build v2.13.3; use
+#   the one from SBo's 14.1 repo if you need the old version for some
+#   reason. Source is created from a git checkout, see git2targz.sh.
+
+PRGNAM=cc65
+VERSION=${VERSION:-2.16_20180102}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_SBo}
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i586 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+if [ "$ARCH" = "i586" ]; then
+  SLKCFLAGS="-O2 -march=i586 -mtune=i686"
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+else
+  SLKCFLAGS="-O2"
+fi
+
+set -e
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT $PKG/usr/doc/$PRGNAM-$VERSION
+cd $TMP
+rm -rf $PRGNAM-$VERSION
+tar xvf $CWD/$PRGNAM-$VERSION.tar.xz
+cd $PRGNAM-$VERSION
+chown -R root:root .
+find . -type f -print0 | xargs -0 chmod 644
+find . -type d -print0 | xargs -0 chmod 755
+
+# external CFLAGS not honored
+sed -i "/^CFLAGS/s,-O[^ ]*,$SLKCFLAGS," src/Makefile
+
+PKGDOC=$PKG/usr/doc/$PRGNAM-$VERSION
+make all PREFIX=/usr prefix=/usr LDFLAGS=-Wl,-s
+#make -C doc html # we use pre-generated HTML docs now
+make install PREFIX=$PKG/usr prefix=$PKG/usr htmldir=$PKGDOC samplesdir=$PKGDOC/samples
+
+# binaries already stripped, no man pages
+
+mkdir -p $PKGDOC
+cp -a README* LICENSE $PKGDOC
+
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}

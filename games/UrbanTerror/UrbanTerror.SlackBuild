@@ -1,0 +1,112 @@
+#!/bin/sh
+
+# Slackware build script for <UrbanTerror>
+
+# Copyright 2011  Matthew "mfillpot" Fillpot
+# All rights reserved.
+#
+# Redistribution and use of this script, with or without modification, is
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR ''AS IS'' AND ANY EXPRESS OR IMPLIED
+# WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+# EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+# OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+# OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+# ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+# urbanterror game is utilizing materials that are covered under the following
+# licenses:
+#  Quake 3 SDK license - the game engine source code is closed source
+#  GPL license - ioUrbanTerror uses the GPL license and its source code
+#   is openly available
+#
+# Full copies of all licenses will be installed in /usr/doc/urbanterror-$VERSION
+
+PRGNAM=UrbanTerror
+VERSION=${VERSION:-4.2.015}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_SBo}
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i586 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+ZIP_VERS=$(echo $VERSION|cut -d '.' -f -2|tr -d ".")
+MIN_VERS=$(echo $VERSION|cut -d '.' -f 3-)
+
+LIBDIRSUFFIX=
+if [ "$ARCH" = "i586" ]; then
+  EXEC="i386"
+elif [ "$ARCH" = "i686" ]; then
+  EXEC="i386"
+elif [ "$ARCH" = "x86_64" ]; then
+  EXEC="x86_64"
+  LIBDIRSUFFIX=64
+else
+  echo "Unrecognized architecture type! Check the script: $0"
+  exit 1
+fi
+
+CLIENT_EXEC=${CLIENT_EXEC:-Quake3-UrT.$EXEC}
+SERVER_EXEC=${SERVER_EXEC:-Quake3-UrT-Ded.$EXEC}
+
+set -e
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+
+mkdir -p $PKG/usr/share
+unzip $CWD/${PRGNAM}${ZIP_VERS}_full${MIN_VERS}.zip -d $PKG/usr/share
+mv $PKG/usr/share/${PRGNAM}${ZIP_VERS} $PKG/usr/share/$PRGNAM
+
+# Make the current arch execs executable
+chmod 0755 $PKG/usr/share/$PRGNAM/$CLIENT_EXEC \
+  $PKG/usr/share/$PRGNAM/$SERVER_EXEC
+
+# Create symlinks in /usr/games
+mkdir -p $PKG/usr/games
+cd $PKG/usr/games
+  ln -sf /usr/share/$PRGNAM/$CLIENT_EXEC urbanterror
+  ln -sf /usr/share/$PRGNAM/$SERVER_EXEC urbanterror_server
+cd -
+
+# Add a menu entry and icon
+mkdir -p $PKG/usr/share/applications $PKG/usr/share/pixmaps
+cat $CWD/$PRGNAM.desktop > $PKG/usr/share/applications/$PRGNAM.desktop
+cat $CWD/q3ut.png > $PKG/usr/share/pixmaps/q3ut.png
+
+# Remove unused files from the package
+( cd $PKG/usr/share/$PRGNAM
+  rm -f *.doc *.exe *.url *.dll *.reg \
+    q3ut4/*.doc q3ut4/*.exe q3ut4/*.url q3ut4/*.dll q3ut4/*.reg
+  rm -rf Quake3-UrT.app* UrTUpdater* )
+[ "$EXEC" != "i386" ] && rm -f $PKG/usr/share/$PRGNAM/*.i386
+[ "$EXEC" != "x86_64" ] && rm -f $PKG/usr/share/$PRGNAM/*.x86_64
+
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+install -m 644 $CWD/docs/* $PKG/usr/doc/$PRGNAM-$VERSION/
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+
+mkdir $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+cat $CWD/doinst.sh > $PKG/install/doinst.sh
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}

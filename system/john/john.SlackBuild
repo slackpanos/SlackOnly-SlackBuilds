@@ -1,0 +1,95 @@
+#!/bin/sh
+
+# Slackware build script for John the Ripper
+
+# Written by Murat D. Kadirov <banderols@gmail.com>
+
+# 20/Nov/2011 * Updated for version 1.7.8 and jambo-patch 8
+#               Thanks a lot Kent Fritz for patch with many improvements
+# 19/Dec/2011 * Updated for version 1.7.9 and jambo-patch 5
+# 10/Nov/2013 * Updated for version 1.8.0
+# 24/Feb/2015 * Added support for AVX instructions --  thanks to Matthijs
+#               Schuurman for the patch
+#               Also removed "MERGEWORDS" option, as it's harmful for cracking
+#               slow hashes.
+
+PRGNAM=john
+VERSION=${VERSION:-1.8.0}
+BUILD=${BUILD:-2}
+TAG=${TAG:-_SBo}
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i486 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+if [ "$ARCH" = "i486" ]; then
+  if grep -q ^flags.*avx /proc/cpuinfo; then
+    TARGET=linux-x86-avx
+  elif grep -q ^flags.*sse2 /proc/cpuinfo; then
+    TARGET=linux-x86-sse2
+  elif grep -q ^flags.*mmx /proc/cpuinfo; then
+    TARGET=linux-x86-mmx
+  else
+    TARGET=linux-x86-any
+  fi
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  if grep -q ^flags.*avx /proc/cpuinfo; then
+    TARGET=linux-x86-64-avx
+  else
+    TARGET=linux-x86-64
+  fi
+  LIBDIRSUFFIX="64"
+else
+  TARGET=generic
+  LIBDIRSUFFIX=""
+fi
+
+set -e
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $PRGNAM-$VERSION
+tar xvf $CWD/$PRGNAM-$VERSION.tar.xz
+
+# Soft-link in tarball causes x bit to be set below; nuke it
+rm -f $PRGNAM-$VERSION/README
+
+cd $PRGNAM-$VERSION
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 -o -perm 511 \) \
+ -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
+ -exec chmod 644 {} \;
+
+mkdir -p $PKG/usr/share/john
+cp -a run/* $PKG/usr/share/john
+rm $PKG/usr/share/john/mailer
+
+make -j1 -C src clean $TARGET CFLAGS="-DJOHN_SYSTEMWIDE=1 -c -Wall -O2 -fomit-frame-pointer"
+
+mkdir -p $PKG/usr/bin
+cp -a run/$PRGNAM run/mailer $PKG/usr/bin
+ln -s $PRGNAM $PKG/usr/bin/unafs
+ln -s $PRGNAM $PKG/usr/bin/unique
+ln -s $PRGNAM $PKG/usr/bin/unshadow
+
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+cp -a doc/* $PKG/usr/doc/$PRGNAM-$VERSION
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}

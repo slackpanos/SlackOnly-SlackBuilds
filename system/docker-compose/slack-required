@@ -1,0 +1,8 @@
+PyYAML
+docopt
+enum34
+jsonschema
+python-cached-property
+python-docker
+python-dockerpty
+python-texttable

@@ -1,0 +1,11 @@
+haskell-byteable
+haskell-crypto-random
+haskell-data-default-class
+haskell-network
+haskell-securemem
+haskell-socks
+haskell-tls
+haskell-x509
+haskell-x509-store
+haskell-x509-system
+haskell-x509-validation

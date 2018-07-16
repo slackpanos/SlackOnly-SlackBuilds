@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=VICE VIC-20 emulator
+Comment=Commodore VIC-20 emulator from the VICE team
+StartupNotify=true
+Exec=xvic
+Icon=vice
+Terminal=false
+Type=Application
+Categories=System

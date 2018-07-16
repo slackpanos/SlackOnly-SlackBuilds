@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Oracle SQL Developer
+GenericName=IDE
+Comment=Oracle SQL Developer free integrated development environment
+Exec=sqldeveloper %F
+Icon=/opt/sqldeveloper/icon.png
+Terminal=false
+Type=Application
+MimeType=text/plain;
+Categories=X-Oracle;Development;Database;

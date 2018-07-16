@@ -1,0 +1,44 @@
+PRGNAM="EMBASSY"
+VERSION="6.6.0"
+HOMEPAGE="http://emboss.sourceforge.net/embassy/"
+DOWNLOAD="https://sourceforge.net/projects/sboppetrov/files/EMBOSS/CBSTOOLS-1.0.0.650.tar.gz \
+	https://sourceforge.net/projects/sboppetrov/files/EMBOSS/CLUSTALOMEGA-1.1.0.tar.gz \
+	https://sourceforge.net/projects/sboppetrov/files/EMBOSS/DOMAINATRIX-0.1.650.tar.gz \
+	https://sourceforge.net/projects/sboppetrov/files/EMBOSS/DOMALIGN-0.1.650.tar.gz \
+	https://sourceforge.net/projects/sboppetrov/files/EMBOSS/DOMSEARCH-0.1.650.tar.gz \
+	https://sourceforge.net/projects/sboppetrov/files/EMBOSS/EMNU-1.05.650.tar.gz \
+	https://sourceforge.net/projects/sboppetrov/files/EMBOSS/ESIM4-1.0.0.650.tar.gz \
+	https://sourceforge.net/projects/sboppetrov/files/EMBOSS/HMMER-2.3.2.650.tar.gz \
+	https://sourceforge.net/projects/sboppetrov/files/EMBOSS/IPRSCAN-4.3.1.650.tar.gz \
+	https://sourceforge.net/projects/sboppetrov/files/EMBOSS/MEME-4.7.650.tar.gz \
+	https://sourceforge.net/projects/sboppetrov/files/EMBOSS/MSE-3.0.0.650.tar.gz \
+	https://sourceforge.net/projects/sboppetrov/files/EMBOSS/MYEMBOSS-6.5.1.tar.gz \
+	https://sourceforge.net/projects/sboppetrov/files/EMBOSS/MYEMBOSSDEMO-6.5.0.tar.gz \
+	https://sourceforge.net/projects/sboppetrov/files/EMBOSS/PHYLIPNEW-3.69.650.tar.gz \
+	https://sourceforge.net/projects/sboppetrov/files/EMBOSS/SIGNATURE-0.1.650.tar.gz \
+	https://sourceforge.net/projects/sboppetrov/files/EMBOSS/STRUCTURE-0.1.650.tar.gz \
+	https://sourceforge.net/projects/sboppetrov/files/EMBOSS/TOPO-2.0.650.tar.gz \
+	https://sourceforge.net/projects/sboppetrov/files/EMBOSS/VIENNA-1.7.2.650.tar.gz"
+MD5SUM="237577573d9cbe5df18bac8dae17240b \
+e4243a86c6127d99b1d501a54a7fbbf3 \
+5cbc136ded7826a0066e51074738a5a1 \
+d74e58418bf1a4de29c1f945830e9e8a \
+f01cea0480c0e9abbd07196084a64451 \
+e66d6083191ac1cc804ea80e494005ee \
+b4b0f551f5c3901228e77475aa95e856 \
+4871d5c8bb0f3cc37f5f34b3126ab171 \
+3330f1ee2f4f4237fc40ac6b4b6f8099 \
+b2ce9b52ec0540bd56634045664ea2ce \
+b79a17a2ad25fe6ffc8d23c7bbf8bc0b \
+3b8096d4f5869c6856c60f53fa5f5131 \
+d1468bcd15d48374d0d59e14e4c4a6b5 \
+b7da94cc7c0f1f6791cd4312a64c225a \
+344da0793ab3a85a68b52b3bdf49929a \
+fa89b9b0cab3c7fe5b86a56de2a94686 \
+9a32d2263a6c67927ab1c237890cc222 \
+49c748441e0e3fd9b86429be3db1d025"
+DOWNLOAD_x86_64=""
+MD5SUM_x86_64=""
+REQUIRES="EMBOSS"
+MAINTAINER="Petar Petrov"
+EMAIL="slackalaxy@gmail.com"

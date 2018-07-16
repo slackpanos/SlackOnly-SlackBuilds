@@ -1,0 +1,58 @@
+#!/bin/sh
+
+# Slackware build script for marathon-infinity-data
+
+# Written by B. Watson (yalhcru@gmail.com)
+
+# Licensed under the WTFPL. See http://www.wtfpl.net/txt/copying/ for details.
+
+PRGNAM=marathon-infinity-data
+VERSION=${VERSION:-20150620}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_SBo}
+
+ARCH=noarch
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+set -e
+
+ZIPNAME=MarathonInfinity
+ZIPFILE=$ZIPNAME-$VERSION-Data.zip
+WRAPPER=marathon-infinity
+DATADIR=$PKG/usr/share/AlephOne/gamedata
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+mkdir -p $DATADIR
+unzip $CWD/$ZIPFILE -d $DATADIR
+
+chown -R root:root $DATADIR
+
+# NB: the usual find predicate is different (zipfile stores +x permissions
+# on some files for no good reason)
+find $DATADIR \
+ \( -type f -exec chmod 644 {} \; \) -o \
+ \( -type d -exec chmod 755 {} \; \)
+
+mkdir -p $PKG/usr/games
+cat $CWD/$WRAPPER > $PKG/usr/games/$WRAPPER
+chmod 0755 $PKG/usr/games/$WRAPPER
+
+mkdir -p $PKG/usr/share/applications
+cat $CWD/$WRAPPER.desktop > $PKG/usr/share/applications/$WRAPPER.desktop
+
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+cat $CWD/slack-required > $PKG/install/slack-required
+cat $CWD/doinst.sh > $PKG/install/doinst.sh
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}

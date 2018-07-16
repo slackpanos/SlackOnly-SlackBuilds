@@ -1,0 +1,13 @@
+[Desktop Entry]
+Name=LinPSK
+Name[en_US]=LinPSK
+Comment=PSK31 for Linux
+Comment[en_US]=PSK31 for Linux
+Exec=linpsk
+Icon=linpsk
+StartupNotify=true
+Terminal=false
+Type=Application
+Categories=HamRadio;
+X-DCOP-ServiceType=none
+X-KDE-SubstituteUID=false

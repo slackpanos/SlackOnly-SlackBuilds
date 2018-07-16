@@ -1,0 +1,342 @@
+#!/bin/sh
+
+# Slackware build script for alacritty
+
+# Copyright 2017-2018 Andrew Clemons, Wellington New Zealand
+# All rights reserved.
+#
+# Redistribution and use of this script, with or without modification, is
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE AUTHOR "AS IS" AND ANY EXPRESS OR IMPLIED
+#  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+#  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO
+#  EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+#  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+#  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+#  OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+#  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+#  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+#  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+PRGNAM=alacritty
+GITREV=${GITREV:-68b3d8abfdeeb388edb1b5e0528d3fddb66fd9e8}
+VERSION=${VERSION:-git$(echo "$GITREV" | sed 's/^\(.\{7\}\).*$/\1/')}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_SBo}
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i586 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+
+  if [ "$ARCH" = "i586" ]; then
+    if rustc -Vv | grep host | grep i686 > /dev/null ; then
+      ARCH=i686
+    fi
+  fi
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+if [ "$ARCH" = "i586" ]; then
+  SLKCFLAGS="-O2 -march=i586 -mtune=i686"
+  CARGOTARGET="--target i586-unknown-linux-gnu"
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  CARGOTARGET="--target i686-unknown-linux-gnu"
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+  CARGOTARGET="--target x86_64-unknown-linux-gnu"
+else
+  SLKCFLAGS="-O2"
+  CARGOTARGET=""
+fi
+
+set -e
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $PRGNAM-$GITREV
+tar xvf $CWD/$PRGNAM-$GITREV.tar.gz
+cd $PRGNAM-$GITREV
+
+# force offline for git crate dependencies
+patch -p1 < $CWD/patch_crate_deps.diff
+
+# build offline
+# configuration tells cargo to use the configured directory
+# for dependencies instead of downloading from crates.io
+mkdir .cargo
+cat << EOF >> .cargo/config
+[source.crates-io]
+registry = 'https://github.com/rust-lang/crates.io-index'
+replace-with = 'vendored-sources'
+
+[source.vendored-sources]
+directory = '$(pwd)/vendor'
+EOF
+
+# deps and versions come from Cargo.lock
+# cargo vender can be used to generate the checksums
+mkdir vendor
+(
+  cd vendor
+
+  for dependency in aho-corasick=0.6.4 \
+                    android_glue=0.2.3 \
+                    ansi_term=0.11.0 \
+                    approx=0.1.1 \
+                    arraydeque=0.4.2 \
+                    atty=0.2.10 \
+                    base64=0.9.2 \
+                    bitflags=0.4.0 \
+                    bitflags=0.7.0 \
+                    bitflags=0.8.2 \
+                    bitflags=1.0.3 \
+                    block=0.1.6 \
+                    byteorder=1.2.3 \
+                    bytes=0.3.0 \
+                    cc=1.0.17 \
+                    cfg-if=0.1.3 \
+                    cgl=0.2.2 \
+                    cgmath=0.16.1 \
+                    clap=2.31.2 \
+                    cmake=0.1.31 \
+                    cocoa=0.15.0 \
+                    core-foundation-sys=0.5.1 \
+                    core-foundation-sys=0.6.0 \
+                    core-foundation=0.5.1 \
+                    core-foundation=0.6.0 \
+                    core-graphics=0.13.0 \
+                    core-graphics=0.14.0 \
+                    core-text=9.2.0 \
+                    dlib=0.4.1 \
+                    downcast-rs=1.0.3 \
+                    dtoa=0.4.2 \
+                    env_logger=0.5.10 \
+                    errno=0.2.3 \
+                    euclid=0.17.3 \
+                    expat-sys=2.1.5 \
+                    filetime=0.1.15 \
+                    fnv=1.0.6 \
+                    foreign-types-shared=0.1.1 \
+                    foreign-types=0.3.2 \
+                    freetype-rs=0.13.0 \
+                    freetype-sys=0.4.0 \
+                    fsevent-sys=0.1.6 \
+                    fsevent=0.2.17 \
+                    fuchsia-zircon-sys=0.3.3 \
+                    fuchsia-zircon=0.3.3 \
+                    gl_generator=0.9.0 \
+                    gleam=0.5.1 \
+                    glutin=0.16.0 \
+                    humantime=1.1.1 \
+                    inotify=0.3.0 \
+                    iovec=0.1.2 \
+                    itoa=0.4.1 \
+                    kernel32-sys=0.2.2 \
+                    khronos_api=2.2.0 \
+                    lazy_static=1.0.1 \
+                    lazycell=0.4.0 \
+                    lazycell=0.6.0 \
+                    libc=0.2.42 \
+                    libloading=0.5.0 \
+                    libz-sys=1.0.18 \
+                    linked-hash-map=0.5.1 \
+                    log=0.3.9 \
+                    log=0.4.2 \
+                    malloc_buf=0.0.6 \
+                    memchr=2.0.1 \
+                    memmap=0.6.2 \
+                    mio-more=0.1.0 \
+                    mio=0.5.1 \
+                    mio=0.6.14 \
+                    miow=0.1.5 \
+                    miow=0.2.1 \
+                    net2=0.2.32 \
+                    nix=0.11.0 \
+                    nix=0.5.1 \
+                    notify=4.0.3 \
+                    num-traits=0.1.43 \
+                    num-traits=0.2.4 \
+                    objc-foundation=0.1.1 \
+                    objc=0.2.2 \
+                    objc_id=0.1.0 \
+                    osmesa-sys=0.1.2 \
+                    owning_ref=0.3.3 \
+                    parking_lot=0.5.5 \
+                    parking_lot_core=0.2.14 \
+                    percent-encoding=1.0.1 \
+                    pkg-config=0.3.11 \
+                    proc-macro2=0.4.6 \
+                    quick-error=1.2.2 \
+                    quote=0.6.3 \
+                    rand=0.4.2 \
+                    redox_syscall=0.1.40 \
+                    redox_termios=0.1.1 \
+                    regex-syntax=0.6.1 \
+                    regex=1.0.0 \
+                    remove_dir_all=0.5.1 \
+                    safemem=0.2.0 \
+                    same-file=1.0.2 \
+                    serde=1.0.66 \
+                    serde_derive=1.0.66 \
+                    serde_json=1.0.20 \
+                    serde_yaml=0.7.5 \
+                    shared_library=0.1.8 \
+                    slab=0.1.3 \
+                    slab=0.3.0 \
+                    slab=0.4.0 \
+                    smallvec=0.6.1 \
+                    smithay-client-toolkit=0.2.3 \
+                    stable_deref_trait=1.1.0 \
+                    strsim=0.7.0 \
+                    syn=0.14.2 \
+                    tempfile=3.0.2 \
+                    termcolor=0.3.6 \
+                    termion=1.5.1 \
+                    textwrap=0.9.0 \
+                    thread_local=0.3.5 \
+                    time=0.1.40 \
+                    ucd-util=0.1.1 \
+                    unicode-width=0.1.5 \
+                    unicode-xid=0.1.0 \
+                    unreachable=1.0.0 \
+                    utf8-ranges=1.0.0 \
+                    utf8parse=0.1.0 \
+                    vcpkg=0.2.3 \
+                    vec_map=0.8.1 \
+                    void=1.0.2 \
+                    vte=0.3.2 \
+                    walkdir=2.1.4 \
+                    wayland-client=0.20.10 \
+                    wayland-commons=0.20.10 \
+                    wayland-protocols=0.20.10 \
+                    wayland-scanner=0.20.10 \
+                    wayland-sys=0.20.10 \
+                    winapi-build=0.1.1 \
+                    winapi-i686-pc-windows-gnu=0.4.0 \
+                    winapi-x86_64-pc-windows-gnu=0.4.0 \
+                    winapi=0.2.8 \
+                    winapi=0.3.5 \
+                    wincolor=0.1.6 \
+                    winit=0.15.1 \
+                    ws2_32-sys=0.2.1 \
+                    x11-dl=2.18.0 \
+                    xdg=2.1.0 \
+                    xml-rs=0.7.0 \
+                    yaml-rust=0.4.0 \
+                    servo-fontconfig=0.4.0 \
+                    servo-fontconfig-sys=4.0.3 ; do
+    dep="$(echo "$dependency" | cut -d= -f1)"
+    ver="$(echo "$dependency" | cut -d= -f2)"
+
+    if [ "$dep" = "servo-fontconfig" ] || [ "$dep" = "servo-fontconfig-sys" ] ; then
+      if [ "$dep" = "servo-fontconfig" ] ; then
+        srcnam="rust-fontconfig"
+        sha1="be2b94de833ec69cf767186262a5fb8360fa5b45"
+      else
+        srcnam="libfontconfig"
+        sha1="5c1845e1bffa11cf4d3e6fb27f456bf5c814ce1b"
+      fi
+
+      crate="$CWD/$srcnam-$sha1.tar.gz"
+      tar xvf "$crate"
+      mv "$srcnam-$sha1" "$dep-$ver"
+
+      if [ "$dep" = "servo-fontconfig" ] ; then
+        (
+          cd "$dep-$ver"
+          sed -i 's/^servo-fontconfig-sys =.*/servo-fontconfig-sys = "4.0.3"/' Cargo.toml
+        )
+      fi
+    else
+      crate="$CWD/$dep-$ver.crate"
+      tar xvf "$crate"
+    fi
+
+    touch $dep-$ver/.cargo-ok
+
+    # generate checksum
+    {
+      printf "{\n"
+      printf '    "files": {\n'
+
+      (
+        cd $dep-$ver
+        find . -type f -print0 | xargs -0 sha256sum | sed -n '/\.cargo-checksum\.json/!p' | sed 's/\.\///;s/^\([^ ]*\)[[:space:]][[:space:]]*\(.*\)$/"\2":"\1",/'
+      ) | sed '$ s/,$//'
+
+      printf "    },\n"
+      printf '    "package": "'
+
+      if [ "$dep" = "servo-fontconfig" ] || [ "$dep" = "servo-fontconfig-sys" ] ; then
+        checksum="$(tar cz $dep-$ver | sha256sum | cut -f1 -d' ')"
+        sed -i "s/^\(\"checksum $dep [^=]*\)= \".*$/\1= \"$checksum\"/" ../Cargo.lock
+
+        printf "%s\"\n" "$checksum"
+      else
+        sha256sum "$crate" | cut -f1 -d' ' | sed 's/$/"/'
+      fi
+
+      printf "}\n"
+    } | python -c "import sys, json; data = sys.stdin.read(); print json.dumps(json.loads(data), sort_keys=True, indent=4, separators=(',', ' : '))" > $dep-$ver/.cargo-checksum.json
+  done
+)
+
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+  -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+
+CFLAGS="$SLKCFLAGS" \
+CXXFLAGS="$SLKCFLAGS" \
+cargo build --release $CARGOTARGET
+
+mkdir -p $PKG/usr/bin/
+
+find target -name $PRGNAM -exec install -m 755 {} $PKG/usr/bin/$PRGNAM \;
+
+find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
+  | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
+
+mkdir -p $PKG/usr/man/man1
+install -m644 alacritty.man $PKG/usr/man/man1/alacritty.1
+
+find $PKG/usr/man -type f -exec gzip -9 {} \;
+for i in $( find $PKG/usr/man -type l ) ; do ln -s $( readlink $i ).gz $i.gz ; rm $i ; done
+
+mkdir -p $PKG/usr/share/bash-completion/completions
+install -m644 alacritty-completions.bash $PKG/usr/share/bash-completion/completions/alacritty
+
+mkdir -p $PKG/usr/share/zsh/site-functions
+install -m644 alacritty-completions.zsh $PKG/usr/share/zsh/site-functions/_alacritty
+
+mkdir -p $PKG/usr/share/terminfo
+tic -o $PKG/usr/share/terminfo alacritty.info
+
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+cp -a LICENSE-APACHE README.md alacritty.yml $PKG/usr/doc/$PRGNAM-$VERSION
+mkdir -p $PKG/usr/share/applications
+install -m 644 $PRGNAM.desktop $PKG/usr/share/applications
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+cat $CWD/slack-required > $PKG/install/slack-required
+cat $CWD/doinst.sh > $PKG/install/doinst.sh
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}

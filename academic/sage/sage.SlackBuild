@@ -1,0 +1,127 @@
+#!/bin/sh
+
+# Slackware build script for sage
+# Written by Jack Maddox <jack@auburn.edu>
+# Currently maintained by Willy Sudiarto Raharjo <willysr@slackbuilds.org>
+# All rights reserved.
+#
+# Redistribution and use of this script, with or without modification, is
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE AUTHOR "AS IS" AND ANY EXPRESS OR IMPLIED
+#  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+#  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO
+#  EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+#  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+#  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+#  OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+#  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+#  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+#  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+PRGNAM=sage
+VERSION=${VERSION:-8.0}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_SBo}
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) export ARCH=i586 ;;
+    arm*) export ARCH=arm ;;
+       *) export ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+SAGEROOT=${SAGEROOT:-/opt/sage}
+
+set -e
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $PRGNAM-$VERSION
+tar xvf $CWD/$PRGNAM-$VERSION.tar.gz
+cd $PRGNAM-$VERSION
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+ -o -perm 511 \) -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+ -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+
+mkdir -p $PKG/$SAGEROOT $PKG/usr/share/{applications,pixmaps} \
+         $PKG/usr/doc/$PRGNAM-$VERSION $PKG/etc/profile.d
+
+# Added freeBSD patch to build as root, thanks to Heinz for pointing it
+patch -p0 < $CWD/pynac.patch
+
+# Added more patch to build as root.
+patch -p1 < $CWD/sage-build-root.patch
+
+# Thanks to Philip Lacroix <slackph@posteo.de>
+rm build/pkgs/python2/patches/sys_path_security-issue_16202.patch
+
+make
+
+# test all examples in the documentation (over 93,000 line of input)
+[ "${TEST:-no}" = "yes" ] && make test
+
+# build the pdf version of the documentation
+# (Note: this requires a LaTeX installation)
+if [ "${PDFDOC:-no}" = "yes" ]; then
+  ./sage -docbuild all pdf
+  cp -av devel/sage/doc/output/pdf $PKG/usr/doc/$PRGNAM-$VERSION
+fi
+
+# install optional packages as defined by the OPTIONALSPKG flag
+OPTIONALSPKG=${OPTIONALSPKG:-no}
+if [ "$OPTIONALSPKG" != "no" ]; then
+    for i in ${OPTIONALSPKG}; do
+        ./sage -i $(./sage -optional | grep ${i})
+    done
+fi
+
+cp -av * $PKG/$SAGEROOT
+rm -rf $PKG/$SAGEROOT/{upstream,logs}
+
+find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
+  | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
+
+# Add profile scripts
+sed "s%SAGEROOT%${SAGEROOT}%" $CWD/profile.d/sage.sh > $PKG/etc/profile.d/sage.sh
+sed "s%SAGEROOT%${SAGEROOT}%" $CWD/profile.d/sage.csh > $PKG/etc/profile.d/sage.csh
+chmod 0755 $PKG/etc/profile.d/*
+
+# install scripts to SAGEROOT/bin that allow the internal sage versions of: gap,
+# gp, singular, maxima, M2, kash, mwrank, ipython, hg, and R to be run independently
+# and add SAGEROOT/bin to the PATH
+if [ "${INSTALLSCRIPTS:-no}" = "yes" ]; then
+  mkdir $PKG$SAGEROOT/bin
+  echo "install_scripts('$PKG$SAGEROOT/bin')" | ./sage
+  sed -i 's%$PATH:${SAGE_ROOT}%$PATH:${SAGE_ROOT}:${SAGE_ROOT}/bin%' $PKG/etc/profile.d/sage.sh
+  sed -i 's%$path ${SAGE_ROOT}%$path ${SAGE_ROOT} ${SAGE_ROOT}/bin%' $PKG/etc/profile.d/sage.csh
+fi
+
+sed "s%SAGEROOT%${SAGEROOT}%" $CWD/$PRGNAM-notebook.desktop > $PKG/usr/share/applications/$PRGNAM-notebook.desktop
+cp src/doc/common/themes/sage/static/sageicon.png $PKG/usr/share/pixmaps/
+
+# install sagetex to a location that is accessible to the system TeX installation
+cp -a local/share/texmf $PKG/usr/share
+
+cp -a COPYING.txt README.md $PKG/usr/doc/$PRGNAM-$VERSION
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+sed "s%SAGEROOT%${SAGEROOT}%" $CWD/doinst.sh > $PKG/install/doinst.sh
+
+cd $PKG
+/sbin/makepkg -p -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}

@@ -1,0 +1,7 @@
+dbus-python3
+docopt
+pyewmh
+pygobject3-python3
+pyxdg
+setproctitle
+wheel

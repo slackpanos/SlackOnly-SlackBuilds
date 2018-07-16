@@ -1,0 +1,168 @@
+#!/bin/sh
+
+# Slackware build script for kodi
+
+# Copyright 2009-2018 Larry Hajali <larryhaja[at]gmail[dot]com>
+# All rights reserved.
+#
+# Redistribution and use of this script, with or without modification, is
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+# THIS SOFTWARE IS PROVIDED ''AS IS'' AND ANY EXPRESS OR IMPLIED
+# WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+# EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+# OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+# OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+# ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+PRGNAM=kodi
+SRCNAM=xbmc
+CODNAM=Krypton
+VERSION=${VERSION:-17.6}
+FFMPEGVER=${FFMPEGVER:-3.1.11}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_SBo}
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i586 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+if [ "$ARCH" = "i586" ]; then
+  SLKCFLAGS="-O2 -march=i586 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+  LIBDIRSUFFIX="64"
+else
+  SLKCFLAGS="-O2"
+  LIBDIRSUFFIX=""
+fi
+
+set -e
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $SRCNAM-$VERSION-$CODNAM
+tar xvf $CWD/$SRCNAM-$VERSION-$CODNAM.tar.gz
+cd $SRCNAM-$VERSION-$CODNAM
+# Don't have the Makefile download ffmpeg during install.
+ln -s $CWD/FFmpeg-${FFMPEGVER}-${CODNAM}.tar.gz \
+  tools/depends/target/ffmpeg/ffmpeg-${FFMPEGVER}-${CODNAM}-17.5.tar.gz
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+  -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+
+# No need to show Git: "Version" in a release build.
+sed -i '/Git:/s|.*|  return GetVersionShort();|' $SRCNAM/utils/SystemInfo.cpp
+
+# Patch for Samba 4.0.
+patch -p1 < $CWD/patches/xbmc-Krypton-samba-4.0.patch
+
+# Fix static linking for Texturepacker. Thanks to Gentoo.
+# Issue: http://forum.kodi.tv/showthread.php?tid=220407
+patch -p0 < $CWD/patches/kodi-texturepacker.patch
+
+# The version of ffmpeg on SBo is too old to compile kodi.
+# Optional ffmpeg is still available but not turned on by
+# default.
+if [ "${FFMPEG:-no}" == "yes" ]; then
+  OPT_DEPS="--with-ffmpeg=shared"
+else
+  OPT_DEPS=""
+fi
+
+# Build webserver. Requires libmicrohttpd.
+if [ "${WEBSERVER:-yes}" == "yes" ]; then
+  OPT_DEPS="$OPT_DEPS --enable-webserver"
+else
+  OPT_DEPS="$OPT_DEPS --disable-webserver"
+fi
+
+export PATH="$PATH:$PWD/tools/depends/native/JsonSchemaBuilder/bin"
+
+./bootstrap
+
+CFLAGS="$SLKCFLAGS" \
+CXXFLAGS="$SLKCFLAGS" \
+./configure \
+  --prefix=/usr \
+  --libdir=/usr/lib${LIBDIRSUFFIX} \
+  --docdir=/usr/doc/$PRGNAM-$VERSION \
+  --disable-silent-rules \
+  --enable-static=no \
+  --disable-debug \
+  --enable-gl \
+  --enable-mid \
+  --enable-alsa \
+  --enable-texturepacker \
+  --enable-pulse \
+  $OPT_DEPS \
+  --build=$ARCH-slackware-linux
+
+make VERBOSE=1
+
+# Wii controller usage. Default is no.
+if ! [ "${WII:-no}" = "no" ]; then
+  make eventclients DESTDIR=$PKG WII_EXTRA_OPTS="-DCWIID_OLD"
+  find $PKG/usr/lib${LIBDIRSUFFIX}/python* -iname "*\.py" -exec chmod 0644 '{}' \;
+  # Create byte-compiled python files.
+  python -m compileall $PKG/usr/lib${LIBDIRSUFFIX}/python*/site-packages/$PRGNAM 2>/dev/null
+fi
+
+make install DESTDIR=$PKG
+python -m compileall $PKG/usr/share/$PRGNAM/addons/service.xbmc.versioncheck
+
+install -m 0755 tools/TexturePacker/TexturePacker $PKG/usr/lib${LIBDIRSUFFIX}/$PRGNAM
+
+find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
+  | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
+
+# Install manpages.
+mkdir -p $PKG/usr/man/man1
+for i in $PRGNAM.bin.1 $PRGNAM.1 $PRGNAM-standalone.1; do
+  install -m 0644 docs/manpages/$i $PKG/usr/man/man1/$i
+done
+
+if ! [ "${WII:-no}" = "no" ]; then
+  for i in $PRGNAM-ps3remote.1 $PRGNAM-send.1 $PRGNAM-wiiremote.1; do
+    install -m 0644 docs/manpages/$i $PKG/usr/man/man1/$i
+  done
+fi
+gzip -9 $PKG/usr/man/man?/*.?
+
+cp -a tools/EventClients/README.txt $PKG/usr/doc/$PRGNAM-$VERSION
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+
+# Final clean up.
+find $PKG \( -name "Makefile*" -o -name "*cmake*" -o -name "*\.in" \) -exec rm -f '{}' \;
+
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+cat $CWD/slack-required > $PKG/install/slack-required
+cat $CWD/doinst.sh > $PKG/install/doinst.sh
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}

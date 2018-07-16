@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Terminal=false
+Exec=moneydance
+Icon=moneydance
+Type=Application
+Categories=Office;Finance;
+StartupNotify=false
+Name=Moneydance Personal Finance Manager
+GenericName=Personal Finance Manager
+Comment=Manage your personal finances

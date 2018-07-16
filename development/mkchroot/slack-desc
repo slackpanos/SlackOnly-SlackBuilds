@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.
+# Line up the first '|' above the ':' following the base package name, and
+# the '|' on the right side marks the last column you can put a character in.
+# You must make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':' except on otherwise blank lines.
+
+        |-----handy-ruler------------------------------------------------------|
+mkchroot: mkchroot (create chroot-able directory tree)
+mkchroot:
+mkchroot: mkchroot creates a chroot-able directory tree using hard links where
+mkchroot: possible. The mkchroot package consists of 2 utilities: mkchroot and
+mkchroot: addchroot. mkchroot creates a minimal initial tree and addchroot
+mkchroot: incorporates (installed) Slackware packages into that tree.
+mkchroot: addchroot knows about some "special" packages for which it does not
+mkchroot: run the normal install script, e.g. bash and glibc. If you find a new
+mkchroot: "special" package, please tell the author.
+mkchroot:
+mkchroot: Homepage https://github.com/duncan-roe/mkchroot

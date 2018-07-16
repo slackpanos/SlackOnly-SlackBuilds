@@ -1,0 +1,9 @@
+lxml
+polib
+psycopg2
+pydot
+python-dateutil
+pytz
+relatorio
+simplejson
+sql

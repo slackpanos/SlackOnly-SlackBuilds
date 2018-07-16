@@ -1,0 +1,126 @@
+#!/bin/sh
+
+# Slackware build script for docker
+
+# Copyright 2014-2015 Vincent Batts <vbatts@hashbangbash.com>
+# Copyright 2017-2018 Audrius Kažukauskas <audrius@neutrino.lt>
+# All rights reserved.
+#
+# Redistribution and use of this script, with or without modification, is
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE AUTHOR "AS IS" AND ANY EXPRESS OR IMPLIED
+#  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+#  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO
+#  EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+#  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+#  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+#  OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+#  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+#  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+#  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+PRGNAM=docker
+VERSION=${VERSION:-18.03.1}
+GITHASH=${GITHASH:-9ee9f40}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_SBo}
+
+SRCNAM=$PRGNAM-ce
+SRCVER=$VERSION-ce
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i586 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+set -e
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $SRCNAM-$SRCVER
+tar xvf $CWD/$SRCNAM-$SRCVER.tar.gz
+cd $SRCNAM-$SRCVER
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+  -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+
+mkdir -p build/src/github.com/docker
+( cd build/src/github.com/docker
+  ln -s $TMP/$SRCNAM-$SRCVER/components/engine docker
+  ln -s $TMP/$SRCNAM-$SRCVER/components/cli cli
+)
+
+# Build daemon.
+cd components/engine
+DOCKER_GITCOMMIT=$GITHASH \
+DOCKER_BUILDTAGS="seccomp" \
+VERSION=$(cat ../../VERSION) \
+GOPATH=$TMP/$SRCNAM-$SRCVER/build \
+./hack/make.sh dynbinary
+
+install -D -m 0755 $(readlink -f bundles/latest/dynbinary-daemon/dockerd) \
+  $PKG/usr/bin/dockerd
+cd -
+
+# Build CLI.
+cd components/cli
+DISABLE_WARN_OUTSIDE_CONTAINER=1 \
+make dynbinary \
+  GITCOMMIT=$GITHASH \
+  VERSION=$(cat ../../VERSION) \
+  GOPATH=$TMP/$SRCNAM-$SRCVER/build
+
+install -D -m 0755 build/docker-linux-amd64 $PKG/usr/bin/docker
+cd -
+
+# Integrate required components.
+ln -s runc $PKG/usr/bin/docker-runc
+ln -s containerd $PKG/usr/bin/docker-containerd
+ln -s containerd-shim $PKG/usr/bin/docker-containerd-shim
+ln -s ctr $PKG/usr/bin/docker-containerd-ctr
+ln -s tini-static $PKG/usr/bin/docker-init
+
+# Completion.
+( cd components/cli/contrib/completion
+  install -D -m 0644 bash/docker $PKG/usr/share/bash-completion/completions/docker
+  install -D -m 0644 zsh/_docker $PKG/usr/share/zsh/site-functions/_docker
+  install -D -m 0644 fish/docker.fish $PKG/usr/share/fish/vendor_completions.d/docker.fish
+)
+
+install -D -m 0644 $CWD/config/docker.default $PKG/etc/default/docker.new
+install -D -m 0644 $CWD/config/docker.logrotate $PKG/etc/logrotate.d/docker.new
+install -D -m 0644 $CWD/config/rc.docker $PKG/etc/rc.d/rc.docker.new
+
+# Install udev rules.
+install -D -m 0644 components/engine/contrib/udev/80-docker.rules \
+  $PKG/lib/udev/rules.d/80-docker.rules
+
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+cp -a \
+  CHANGELOG.md components/engine/LICENSE components/engine/NOTICE README.md \
+  $PKG/usr/doc/$PRGNAM-$VERSION
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+cat $CWD/slack-required > $PKG/install/slack-required
+cat $CWD/doinst.sh > $PKG/install/doinst.sh
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}

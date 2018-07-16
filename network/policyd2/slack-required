@@ -1,0 +1,5 @@
+perl-Cache-FastMmap
+perl-Config-IniFiles
+perl-Mail-SPF
+perl-Net-CIDR
+perl-Net-Server

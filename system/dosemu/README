@@ -1,0 +1,5 @@
+dosemu is a DOS EMUlator
+
+DOSEMU is a user-level program which uses certain special features
+of the Linux kernel and the 80386 processor to run MS-DOS/FreeDOS
+in what we in the biz call a 'DOS box'

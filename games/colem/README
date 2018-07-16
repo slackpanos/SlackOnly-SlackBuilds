@@ -1,0 +1,31 @@
+colem (ColecoVision emulator)
+
+ColEm is a portable emulator of the old ColecoVision videogame console.
+It should run most ColecoVision games and supports Coleco's SuperAction
+controllers with spin wheels.
+
+ColEm uses PulseAudio for audio. If you *really* *hate* pulse, see the
+file README.oss.
+
+In order to run ColecoVision games, you will need a copy of the system
+ROM image, but for copyright reasons, no ROM image is included.
+The file is generally called "coleco.rom" or "coleco.zip" (which
+contains "coleco.rom"). If you own a ColecoVision console, depending
+on the laws where you live, it may or may not be legal for you to use a
+copy of the ROM. If it's legal, you can either crack open your console,
+remove the ROM chip, and read the data from it... or use google-fu to
+find an already-dumped image file. Legal issues aside, you have 2 ways
+to provide the ROM image for the emulator to use:
+
+1. Buld the package with the ROM image:
+
+  Place either "coleco.rom" or "coleco.zip" (containing "coleco.rom")
+  in the directory with the SlackBuild script. The resulting package will
+  include the ROM image in "usr/share/colem/coleco.rom". If you do this,
+  DO NOT give anyone a copy of the package! Using the ROM might possibly
+  be legal, but bundling it with ColEm is against the ColEm license.
+
+2. Build the package without the ROM image:
+
+  After installing the package, manually place a copy of "coleco.rom" in
+  "/usr/share/colem/" or "~/.colem/".

@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.
+# Line up the first '|' above the ':' following the base package name, and
+# the '|' on the right side marks the last column you can put a character in.
+# You must make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':' except on otherwise blank lines.
+
+      |-----handy-ruler------------------------------------------------------|
+fossil: fossil (Distributed Version Control System)
+fossil:
+fossil: Fossil is a distributed version control and ticket tracking system
+fossil: created by D. Richard Hipp, primary author of SQLite.  Features:
+fossil: simple command-line interface, coherent versioning across all files,
+fossil: easy branching and merging, customizable web interface, built-in wiki,
+fossil: SHA3-256 and hardened SHA1 checksums, FUSE filesystem, and automated
+fossil: replication and backup.  Content is stored using SQLite for atomicity,
+fossil: durability, and effortless administration.
+fossil:
+fossil: Project Site: https://www.fossil-scm.org/

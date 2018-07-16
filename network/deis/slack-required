@@ -1,0 +1,7 @@
+PyYAML
+docopt
+ndg_httpsclient
+python-dateutil
+python-requests
+python-tabulate
+termcolor

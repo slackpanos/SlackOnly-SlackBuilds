@@ -1,0 +1,12 @@
+PRGNAM="erlang-otp"
+VERSION="19.3"
+HOMEPAGE="http://www.erlang.org"
+DOWNLOAD="http://www.erlang.org/download/otp_src_19.3.tar.gz \
+          http://www.erlang.org/download/otp_doc_man_19.3.tar.gz"
+MD5SUM="a8c259ec47bf84e77510673e1b76b6db \
+        63f115d98934f4483a0341c567193747"
+DOWNLOAD_x86_64=""
+MD5SUM_x86_64=""
+REQUIRES=""
+MAINTAINER="Ryan S. Northrup"
+EMAIL="northrup@yellowapple.us"

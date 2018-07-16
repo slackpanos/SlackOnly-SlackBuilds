@@ -1,0 +1,8 @@
+[Desktop Entry]
+Exec=specimen
+Icon=
+Name=Specimen
+GenericName=Midi Soft-Sampler
+StartupNotify=true
+Type=Application
+Categories=AudioVideo;

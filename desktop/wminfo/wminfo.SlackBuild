@@ -1,0 +1,90 @@
+#!/bin/sh
+
+# Slackware build script for wminfo
+# Written by Cezary M. Kruk (c.kruk@bigfoot.com)
+#
+# Modified by the SlackBuilds.org project.
+
+PRGNAM=wminfo
+VERSION=${VERSION:-4.2.1}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_SBo}
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i486 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+if [ "$ARCH" = "i486" ]; then
+  SLKCFLAGS="-O2 -march=i486 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+  LIBDIRSUFFIX="64"
+else
+  SLKCFLAGS="-O2"
+  LIBDIRSUFFIX=""
+fi
+
+set -e
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $PRGNAM-$VERSION
+tar xvf $CWD/$PRGNAM-$VERSION.tar.gz
+cd $PRGNAM-$VERSION
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+  -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+
+cd wminfo
+  ./configure --prefix=/usr
+  make \
+    LIBDIR="-L/usr/lib${LIBDIRSUFFIX}/X11" \
+    CFLAGS="$SLKCFLAGS -fgnu89-inline"
+
+# Copy executable to the correct location
+mkdir -p $PKG/usr/bin
+cp -a wminfo $PKG/usr/bin
+cp -a regex $PKG/usr/bin
+cp -a ../contrib/* $PKG/usr/bin
+chmod 0755 $PKG/usr/bin/*
+rm $PKG/usr/bin/README.*
+cd -
+
+find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
+  | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
+
+mkdir -p $PKG/usr/man/man1
+cp -a man/wminfo.1 $PKG/usr/man/man1
+gzip -9 $PKG/usr/man/man1/wminfo.1
+
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+cp -a BUGS COPYING ChangeLog INSTALL Plugins-HOWTO README README.1st README.CPU.usage \
+  README.benchmarks README.colors README.multi+wrapper README.regex README.plugin.rerun \
+  THANKS TODO contrib plugins.binary plugins.conky plugins.offline plugins.online \
+  plugins.system-1 plugins.system-2 samples \
+  $PKG/usr/doc/$PRGNAM-$VERSION
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+cat $CWD/doinst.sh > $PKG/install/doinst.sh
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}

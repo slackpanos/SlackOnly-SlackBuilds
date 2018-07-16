@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.
+# Line up the first '|' above the ':' following the base package name, and
+# the '|' on the right side marks the last column you can put a character in.
+# You must make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':' except on otherwise blank lines.
+
+         |-----handy-ruler------------------------------------------------------|
+hnefatafl: hnefatafl (Norse board game)
+hnefatafl:
+hnefatafl: Hnefatafl is a Norse board game that has been played in Scandinavia
+hnefatafl: since at least 400 A.D..
+hnefatafl:
+hnefatafl: This is an implementation written in C. The game rules are defined
+hnefatafl: with ruleset files and are therefore somewhat flexible. There is a
+hnefatafl: computer player and an X interface, but both are optional. Network
+hnefatafl: play is not supported.
+hnefatafl:
+hnefatafl:

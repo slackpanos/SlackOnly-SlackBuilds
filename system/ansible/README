@@ -1,0 +1,7 @@
+Ansible (a ssh-based config management framework)
+
+A radically simple, model-driven orchestration solution that automates
+configuration, software deployment, and other IT needs.
+
+It comes as an easy-to-use and powerful alternative to infrastructure
+management tools such as CFEngine, Chef, Puppet, and SaltStack.

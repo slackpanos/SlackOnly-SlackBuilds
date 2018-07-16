@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=kompoZer
+GenericName=Web Authoring System
+Comment=Create a Web Site
+Comment[pt_BR]=Autorador de Web Sites
+Exec=kompozer
+Icon=kompozer
+Terminal=false
+Type=Application
+StartupNotify=true
+Categories=Development;

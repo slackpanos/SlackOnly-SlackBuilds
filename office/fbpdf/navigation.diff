@@ -1,0 +1,58 @@
+diff -Naur fbpdf-20160804/README fbpdf-20160804.patched/README
+--- fbpdf-20160804/README	2016-08-04 15:19:06.282346689 -0400
++++ fbpdf-20160804.patched/README	2016-08-04 15:07:40.384322633 -0400
+@@ -22,6 +22,9 @@
+ o		set page number (for 'G' command only)
+ O		set page number and go to current page
+ z		zoom; prefix multiplied by 10 (i.e. '15z' = 150%)
++z/=	zoom; prefix multiplied by 10 (i.e. '12z' = 120%). Default 15.
+++		increase zoom by 10%
++-		decrease zoom by 10%
+ r		set rotation in degrees
+ i		print some information
+ q		quit
+diff -Naur fbpdf-20160804/fbpdf.c fbpdf-20160804.patched/fbpdf.c
+--- fbpdf-20160804/fbpdf.c	2016-08-04 15:19:06.282346689 -0400
++++ fbpdf-20160804.patched/fbpdf.c	2016-08-04 15:18:38.618345719 -0400
+@@ -252,6 +252,7 @@
+ 				srow = prow;
+ 			break;
+ 		case 'z':
++		case '=':
+ 			zoom_page(getcount(zoom_def));
+ 			break;
+ 		case 'w':
+@@ -301,10 +302,18 @@
+ 		case ' ':
+ 		case CTRLKEY('d'):
+ 			srow += srows * getcount(1) - step;
++			if(srow > prows) {
++				srow = 0;
++				loadpage(num + 1);
++			}
+ 			break;
+ 		case 127:
+ 		case CTRLKEY('u'):
+ 			srow -= srows * getcount(1) - step;
++			if(srow < 0) {
++				srow = prows - step;
++				loadpage(num - 1);
++			}
+ 			break;
+ 		case '[':
+ 			scol = pcol;
+@@ -320,6 +329,14 @@
+ 			break;
+ 		case CTRLKEY('l'):
+ 			break;
++		case '+':
++			count = 0;
++			zoom_page(zoom + 1);
++			break;
++		case '-':
++			count = 0;
++			if(zoom > 0) zoom_page(zoom - 1);
++			break;
+ 		default:	/* no need to redraw */
+ 			continue;
+ 		}

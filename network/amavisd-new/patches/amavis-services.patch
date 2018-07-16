@@ -1,0 +1,11 @@
+--- amavis-services.orig	2016-04-26 22:59:18.437618553 -0500
++++ amavis-services	2016-04-26 23:02:46.479272826 -0500
+@@ -71,7 +71,7 @@
+ $syslog_facility = LOG_MAIL;
+ $syslog_ident = $myproduct_name;
+ 
+-$MYHOME = '/var/amavis';
++$MYHOME = '/var/lib/amavis';
+ 
+ # A socket to which amavisd child processes report their data.
+ # should match one of the sockets in @zmq_sockets in amavisd.conf

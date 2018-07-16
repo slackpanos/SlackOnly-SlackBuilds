@@ -1,0 +1,10 @@
+Jinja2
+Markdown
+Pygments
+Unidecode
+blinker
+docutils
+feedgenerator
+python-dateutil
+pytz
+six

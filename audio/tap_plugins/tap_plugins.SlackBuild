@@ -1,0 +1,175 @@
+#!/bin/sh
+
+# Slackware build script for tap_plugins
+
+# Written by B. Watson (yalhcru@gmail.com)
+
+# Licensed under the WTFPL. See http://www.wtfpl.net/txt/copying/ for details.
+
+# 20171221 bkw: update for v1.0.0
+
+# 20151104 bkw:
+# update for v0.7.3, update docs to 20140526
+# get rid of reverbed.sh wrapper script (patch reverbed instead)
+# add capability stuff for reverbed
+# add .desktop, icon for reverbed
+
+PRGNAM=tap_plugins
+VERSION=${VERSION:-1.0.0}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_SBo}
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i586 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+if [ "$ARCH" = "i586" ]; then
+  SLKCFLAGS="-O2 -march=i586 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+  LIBDIRSUFFIX="64"
+fi
+
+# You almost certainly do NOT want FORCE_SLACK_CFLAGS=yes
+# (it's here for purists, and for troubleshooting purposes)
+FORCE_SLACK_CFLAGS=${FORCE_SLACK_CFLAGS:-no}
+
+# You may need FORCE_SYSTEM_LADSPA_H=yes if building against a version
+# of ladspa_sdk other than 1.13 (try without first)
+FORCE_SYSTEM_LADSPA_H=${FORCE_SYSTEM_LADSPA_H:-no}
+
+PLUGINS_SRCNAM=tap-plugins
+DOCS_SRCNAM=tap-plugins-doc
+DOCS_VERSION=20140526
+REVERBED_SRCNAM=tap-reverbed
+REVERBED_VERSION=r0
+
+set -e
+
+# First build the plugins
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $PLUGINS_SRCNAM-$VERSION
+tar xvf $CWD/$PLUGINS_SRCNAM-$VERSION.tar.gz
+cd $PLUGINS_SRCNAM-$VERSION
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 -o -perm 511 \) \
+ -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
+ -exec chmod 644 {} \;
+
+if [ "$FORCE_SLACK_CFLAGS" = "yes" ]; then
+  sed -i '/^CFLAGS/s/\(=.*\) -O3 \(.*\)\(-c\)/\1 '"$SLKCFLAGS"' \3/' Makefile
+fi
+
+if [ "$FORCE_SYSTEM_LADSPA_H" = "yes" ]; then
+  rm -f ladspa.h
+  cp /usr/include/ladspa.h .
+fi
+
+make
+strip *.so
+make install \
+  INSTALL_PLUGINS_DIR=$PKG/usr/lib$LIBDIRSUFFIX/ladspa/ \
+  INSTALL_LRDF_DIR=$PKG/usr/share/ladspa/rdf/
+
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+for i in COPYING CREDITS README; do
+  cat $i > $PKG/usr/doc/$PRGNAM-$VERSION/$i.plugins
+done
+
+# Now build the reverb editor
+cd $TMP
+rm -rf $REVERBED_SRCNAM-$REVERBED_VERSION
+tar xvf $CWD/$REVERBED_SRCNAM-$REVERBED_VERSION.tar.gz
+cd $REVERBED_SRCNAM-$REVERBED_VERSION
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 -o -perm 511 \) \
+ -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
+ -exec chmod 644 {} \;
+
+# patch by SlackBuild author, makes reverbed load its config from /etc
+# if no ~/.reverbed found (rather than aborting with an error message).
+patch -p1 < $CWD/reverbed-default-config.diff
+
+./configure \
+  --prefix=/usr \
+  --libdir=/usr/lib${LIBDIRSUFFIX} \
+  --sysconfdir=/etc \
+  --localstatedir=/var \
+  --mandir=/usr/man \
+  --build=$ARCH-slackware-linux
+
+if [ "$FORCE_SLACK_CFLAGS" = "yes" ]; then
+  # CFLAGS not supported by autoconf!
+  sed -i '/^CFLAGS/s/=.*-fPIC/= '"$SLKCFLAGS"' -fPIC/' src/Makefile
+fi
+
+make LIBS=-lm
+
+# more trouble than it's worth to get 'make install' to handle DESTDIR
+mkdir -p $PKG/usr/bin $PKG/etc/reverbed
+install -s -m0755 -oroot -groot src/reverbed $PKG/usr/bin/
+cat src/.reverbed > $PKG/etc/reverbed/reverbed.conf
+
+# icon came from:
+# https://www.hscripts.com/freeimages/icons/mechanical/spring-clipart.php
+# and turned into a PNG via ImageMagick's convert.
+mkdir -p $PKG/usr/share/pixmaps
+cat $CWD/reverbed.png > $PKG/usr/share/pixmaps/reverbed.png
+
+# .desktop written by SlackBuild author
+mkdir -p $PKG/usr/share/applications
+cat $CWD/reverbed.desktop > $PKG/usr/share/applications/reverbed.desktop
+
+# ChangeLog and NEWS are 0-length placeholders
+for i in AUTHORS COPYING README; do
+  cat $i > $PKG/usr/doc/$PRGNAM-$VERSION/$i.reverbed
+done
+
+# Now package up the HTML docs
+cd $PKG/usr/doc/$PRGNAM-$VERSION
+  tar xvf $CWD/$DOCS_SRCNAM-$DOCS_VERSION.tar.gz
+  chown -R root:root .
+  find -L . \
+   \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 -o -perm 511 \) \
+   -exec chmod 755 {} \; -o \
+   \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
+   -exec chmod 644 {} \;
+cd -
+
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+cat $CWD/README > $PKG/usr/doc/$PRGNAM-$VERSION/README.SBo
+
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+cat $CWD/slack-required > $PKG/install/slack-required
+cat $CWD/doinst.sh > $PKG/install/doinst.sh
+
+# Only add capability stuff if not disabled:
+if [ "${SETCAP:-yes}" = "yes" ]; then
+  cat $CWD/setcap.sh >> $PKG/install/doinst.sh
+  # Only allow execution by audio group
+  chown root:audio $PKG/usr/bin/reverbed
+  chmod 0750 $PKG/usr/bin/reverbed
+fi
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}

@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.
+# Line up the first '|' above the ':' following the base package name, and
+# the '|' on the right side marks the last column you can put a character in.
+# You must make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':' except on otherwise blank lines.
+
+      |-----handy-ruler------------------------------------------------------|
+lapack: lapack (linear algebra routines)
+lapack:
+lapack: LAPACK provides routines for solving systems of simultaneous linear
+lapack: equations, least-squares solutions of linear systems of equations,
+lapack: eigenvalue problems, and singular value problems. The associated
+lapack: matrix factorizations (LU, Cholesky, QR, SVD, Schur, generalized
+lapack: Schur) are also provided, as are related computations such as
+lapack: reordering of the Schur factorizations and estimating condition
+lapack: numbers. Dense and banded matrices are handled, but not general
+lapack: sparse matrices. In all areas, similar functionality is provided
+lapack: for real and complex matrices, in both single and double precision.

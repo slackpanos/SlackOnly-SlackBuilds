@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=Frozen Bubble
+GenericName=Shooting Bubble Game 
+Exec=frozen-bubble
+Icon=/usr/share/icons/hicolor/48x48/frozen-bubble.png
+Type=Application
+Categories=Game;ArcadeGame

@@ -1,0 +1,255 @@
+#!/bin/sh
+
+# Slackware build script for xen
+
+# Copyright 2010, 2011, 2013, 2014, 2015, 2016, 2017, 2018  Mario Preksavec, Zagreb, Croatia
+# All rights reserved.
+#
+# Redistribution and use of this script, with or without modification, is
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE AUTHOR "AS IS" AND ANY EXPRESS OR IMPLIED
+#  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+#  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO
+#  EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+#  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+#  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+#  OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+#  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+#  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+#  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+PRGNAM=xen
+VERSION=${VERSION:-4.10.1}
+BUILD=${BUILD:-2}
+TAG=${TAG:-_SBo}
+
+SEABIOS=${SEABIOS:-1.10.2}
+OVMF=${OVMF:-20170920_947f3737a}
+IPXE=${IPXE:-356f6c1b64d7a97746d1816cef8ca22bdd8d0b5d}
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i586 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+if [ "$ARCH" = "i586" ]; then
+  SLKCFLAGS="-O2 -march=i586 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+  LIBDIRSUFFIX="64"
+  if [ ! -e /usr/include/gnu/stubs-32.h ]; then
+    cat << EOF
+
+  HVM domain support (hvmloader) requires 32bit libs (multilib),
+  or you can try symlinking stubs-64.h to stubs-32.h like this:
+
+  # ln -s /usr/include/gnu/stubs-64.h /usr/include/gnu/stubs-32.h
+
+EOF
+    exit
+  fi
+else
+  SLKCFLAGS="-O2"
+  LIBDIRSUFFIX=""
+fi
+
+CONF_XEN="--disable-qemu-traditional --disable-rombios"
+CONF_QEMUU="--sysconfdir=/etc"
+
+case "${BUILD_STUBDOM:-no}" in
+  yes) CONF_XEN+=" --enable-stubdom" ;;
+    *) CONF_XEN+=" --disable-stubdom" ;;
+esac
+
+case "${WITH_OVMF:-yes}" in
+  no) CONF_XEN+=" --disable-ovmf" ;;
+   *) case "$ARCH" in
+        i?86) cat << EOF
+
+  Disabling 32bit EFI/UEFI guest support (WITH_OVMF=no)
+
+EOF
+              CONF_XEN+=" --disable-ovmf" ;;
+           *) CONF_XEN+=" --enable-ovmf" ;;
+      esac
+esac
+
+case "${USE_LIBSSH2:-no}" in
+  yes) CONF_QEMUU+=" --enable-libssh2" ;;
+    *) CONF_QEMUU+=" --disable-libssh2" ;;
+esac
+
+case "${USE_BLUEZ:-no}" in
+  yes) CONF_QEMUU+=" --enable-bluez" ;;
+    *) CONF_QEMUU+=" --disable-bluez" ;;
+esac
+
+case "${USE_GTK:-no}" in
+  yes) CONF_QEMUU+=" --enable-gtk" ;;
+    *) CONF_QEMUU+=" --disable-gtk" ;;
+esac
+
+case "${USE_SPICE:-no}" in
+  yes) CONF_QEMUU+=" --enable-spice" ;;
+    *) CONF_QEMUU+=" --disable-spice" ;;
+esac
+
+set -e
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $PRGNAM-$VERSION
+tar xvf $CWD/$PRGNAM-$VERSION.tar.gz
+cd $PRGNAM-$VERSION
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+  -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+
+# Needed by XSA-263 (for now...)
+patch -p1 <$CWD/patches/xen-4.10.2-pre.patch
+
+# Apply Xen Security Advisory patches
+for i in $CWD/xsa/* ; do
+  case $i in
+    *qemut*.patch) patch --verbose -d tools/qemu-xen-traditional -p1 <$i ;;
+     *qemu*.patch) patch --verbose -d tools/qemu-xen -p1 <$i ;;
+          *.patch) patch --verbose -p1 <$i ;;
+  esac
+done
+
+# Remove hardlinks
+patch -p1 <$CWD/patches/symlinks_instead_of_hardlinks.diff
+
+# Copy already present source tarballs
+cp $CWD/ipxe-git-$IPXE.tar.gz tools/firmware/etherboot/_ipxe.tar.gz
+(
+  # Seabios
+  cd tools/firmware
+  tar -xf $CWD/seabios-$SEABIOS.tar.gz
+  mv seabios-$SEABIOS seabios-dir-remote
+  ln -s seabios-dir-remote seabios-dir
+  make -C seabios-dir defconfig
+  # OVMF
+  tar -xf $CWD/xen-ovmf-$OVMF.tar.bz2
+  mv xen-ovmf-$OVMF ovmf-dir-remote
+  ln -s ovmf-dir-remote ovmf-dir
+  cp ovmf-makefile ovmf-dir/Makefile
+)
+cp $CWD/{lwip,zlib,newlib,pciutils,grub,gmp,tpm_emulator}-*.tar.?z* \
+  $CWD/polarssl-*.tgz stubdom
+
+# Prevent leaks during the build
+patch -p1 <$CWD/patches/stubdom_zlib_disable_man_install.diff
+
+# Fix glibc-2.27 build
+if [ "$(ldd --version | awk '{print $NF; exit}')" = "2.27" ]; then
+  ( cd tools/qemu-xen && patch -p1 <$CWD/patches/glibc-memfd_fix_configure_test.patch )
+fi
+
+CFLAGS="$SLKCFLAGS" \
+CXXFLAGS="$SLKCFLAGS" \
+./configure \
+  --prefix=/usr \
+  --libdir=/usr/lib${LIBDIRSUFFIX} \
+  --libexecdir=/usr/libexec \
+  --sysconfdir=/etc \
+  --localstatedir=/var \
+  --mandir=/usr/man \
+  --docdir=/usr/doc/$PRGNAM-$VERSION \
+  $CONF_XEN \
+  --with-extra-qemuu-configure-args="$CONF_QEMUU" \
+  --build=$ARCH-slackware-linux
+
+make install-xen \
+  docdir=/usr/doc/$PRGNAM-$VERSION \
+  DOCDIR=/usr/doc/$PRGNAM-$VERSION \
+  mandir=/usr/man \
+  MANDIR=/usr/man \
+  DESTDIR=$PKG
+
+make install-tools \
+  docdir=/usr/doc/$PRGNAM-$VERSION \
+  DOCDIR=/usr/doc/$PRGNAM-$VERSION \
+  mandir=/usr/man \
+  MANDIR=/usr/man \
+  DESTDIR=$PKG
+
+if [ "$BUILD_STUBDOM" = "yes" ]; then
+  make install-stubdom \
+    docdir=/usr/doc/$PRGNAM-$VERSION \
+    DOCDIR=/usr/doc/$PRGNAM-$VERSION \
+    mandir=/usr/man \
+    MANDIR=/usr/man \
+    DESTDIR=$PKG
+fi
+
+make install-docs \
+  docdir=/usr/doc/$PRGNAM-$VERSION \
+  DOCDIR=/usr/doc/$PRGNAM-$VERSION \
+  mandir=/usr/man \
+  MANDIR=/usr/man \
+  DESTDIR=$PKG
+
+# Remove useless symlinks in boot/
+find $PKG/boot/ -type l -a -name "xen-*" -exec rm -f {} \; 2>/dev/null || true
+
+# Move from SYSV to BSD init scripts
+( cd $PKG/etc/rc.d/init.d && for i in * ; do mv $i ../rc.$i.new ; done )
+
+# Remove empty directories
+rmdir $PKG/etc/rc.d/init.d/
+
+# Append .new to config files
+for i in $PKG/etc/{default/*,xen/*.conf} ; do mv $i $i.new ; done
+
+# Remove some executable flags
+chmod -x $PKG/usr/libexec/xen/boot/*.gz 2>/dev/null || true
+
+find $PKG | xargs file | grep -e "executable" -e "shared object" | grep ELF \
+  | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
+
+find $PKG/usr/man -type f -exec gzip -9 {} \;
+for i in $( find $PKG/usr/man -type l ) ; do ln -s $( readlink $i ).gz $i.gz ; rm $i ; done
+
+if [ "${INSTALL_OPENVSWITCH_EXTENDED:-no}" != "no" ]; then
+  install -m777 -oroot -groot $CWD/openvswitch/vif-openvswitch-extended \
+    $PKG/etc/xen/scripts/vif-openvswitch-extended
+  install -m777 -oroot -groot $CWD/openvswitch/openvswitch-clean.sh \
+    $PKG/usr/bin/openvswitch-clean
+  cp $CWD/openvswitch/openvswitch.conf $PKG/etc/xen/openvswitch.conf.new
+  cp $CWD/openvswitch/README.openvswitch-extended $PKG/usr/doc/$PRGNAM-$VERSION
+else
+  cp -r $CWD/openvswitch $PKG/usr/doc/$PRGNAM-$VERSION
+fi
+
+cp -r COPYING MAINTAINERS README $CWD/{dom0,domU} $PKG/usr/doc/$PRGNAM-$VERSION
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+cat $CWD/README.SLACKWARE > $PKG/usr/doc/$PRGNAM-$VERSION/README.SLACKWARE
+
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+cat $CWD/slack-required > $PKG/install/slack-required
+cat $CWD/doinst.sh > $PKG/install/doinst.sh
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}

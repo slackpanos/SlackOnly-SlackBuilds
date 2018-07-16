@@ -1,0 +1,5 @@
+pluggy
+py
+setuptools-scm
+six
+virtualenv

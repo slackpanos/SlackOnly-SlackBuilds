@@ -1,0 +1,5 @@
+appstream-glib
+bubblewrap
+json-glib
+libseccomp
+ostree

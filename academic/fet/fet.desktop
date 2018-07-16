@@ -1,0 +1,11 @@
+[Desktop Entry]
+Name=FET
+GenericName=Timetable software for schools
+GenericName[ro]=Program orare şcolare
+GenericName[hu]=Órarend fejlesztő program
+GenericName[tr]=Ders programı hazırlayıcı
+Exec=fet
+Terminal=false
+Icon=fet
+Type=Application
+Categories=Qt;Education;

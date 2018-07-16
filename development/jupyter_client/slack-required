@@ -1,0 +1,5 @@
+decorator
+jupyter_core
+python-dateutil
+pyzmq
+traitlets

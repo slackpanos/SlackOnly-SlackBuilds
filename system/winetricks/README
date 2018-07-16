@@ -1,0 +1,11 @@
+Winetricks is an easy way to work around problems in Wine.
+
+It has a menu of supported games/apps for which it can do all the
+workarounds automatically. It also lets you install missing DLLs or
+tweak various Wine settings individually.
+
+This build script uses a snapshot of the winetricks script.
+
+Winetricks is run on the command line.
+In order to have a GUI, install zenity which is also available at
+slackbuilds.org.

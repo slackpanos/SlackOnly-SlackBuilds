@@ -1,0 +1,8 @@
+fmodapi (a cross platform audio library)
+
+Audio library, primarily intended for games, also known as FMODEX.
+Supports at least 12 platforms, including Linux, Windows, and OSX.
+
+fmodapi is proprietary software. Make sure you read the terms in
+/usr/doc/fmodapi-$VERSION/LICENSE.TXT before incorporating fmodapi into
+your project.

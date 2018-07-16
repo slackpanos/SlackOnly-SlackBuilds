@@ -1,0 +1,129 @@
+#!/bin/sh
+
+# Simple `seafile-admin` & `seafserv-gc` wrapper script.
+
+# Copyright 2015 Marcel Saegebarth <marc@mos6581.de>
+# All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are
+# met:
+#
+# * Redistributions of source code must retain the above copyright
+# notice, this list of conditions and the following disclaimer.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+THIS_NAME=$(basename ${0})
+WORKING_DIR=${WORKING_DIR:-/opt/haiwen}
+PYTHONPATH=$WORKING_DIR/seafile-server/seahub/thirdpart:$PYTHONPATH
+PATH=$PYTHONPATH:$PATH
+SEAFILEUSER=seafile
+SEAFILEDATA=${SEAFILEDATA:-""}
+OPTHELP=${OPTHELP:-no}
+ARGUMENTS=${ARGUMENTS:-$1}
+
+set -o pipefail
+set -o nounset
+
+alias printf=$(command -v printf)
+
+getopt -T > /dev/null
+if [ $? -eq 4 ]; then
+  ARGS=$(getopt -a -n "$THIS_NAME" -l data-directory:,help -o d:h -- "$@")
+    if [ $? -ne 0 ]; then
+      printf '\n' && exit 1
+    fi
+  eval set -- $ARGS
+else
+  printf '%s\n' "Failed: Require GNU enhanced version. Exit." && exit 1
+fi
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    -d | --data-directory) SEAFILEDATA=$2 ;;
+    -h | --help)           OPTHELP=yes    ;;
+    --) shift; break;;
+  esac
+  shift
+done
+
+if [ "$OPTHELP" = "yes" ]; then
+  cat << EOF
+${THIS_NAME}
+
+Usage: seafile start|stop|restart|setup|create-admin|reset-admin|cleanup [-d <seafile-data-directory>]
+
+Options
+  -d, --data-directory Specify seafile data directory for garbage collector or
+                       alternatively set the SEAFILEDATA environment variable.
+                       if not used it will ask for the directory.
+  -h, --help           Displays this help message.
+EOF
+  exit 0
+fi
+
+execute () {
+  su -s /bin/sh -l $SEAFILEUSER -c "export PYTHONPATH=$PYTHONPATH PATH=$PATH && cd $WORKING_DIR && seafile-admin $1"
+}
+
+garbage_collector () {
+  if [ -z "$SEAFILEDATA" ]; then
+    read -p 'Enter seafile data directory: ' SEAFILEDATA
+  fi
+
+  # check if directory
+  if [ ! -d "$SEAFILEDATA" ]; then
+    printf '\n%s\n' "Couldn't find directory '$SEAFILEDATA'" && exit 1
+  fi
+
+  # check if correct directory by checking for 'seafile.db'
+  if [ ! -f "$SEAFILEDATA/seafile.db" ]; then
+    printf '\n%s\n' "Couldn't find 'seafile.db' in directory '$SEAFILEDATA'" && exit 1
+  fi
+
+  # as from the manual, stop seafile first and start again after the garbage
+  # collection
+  execute stop && \
+  su -s /bin/sh -l $SEAFILEUSER -c "seafserv-gc -c \"$WORKING_DIR/ccnet\" -d \"$SEAFILEDATA\"" && \
+  execute start
+}
+
+case "$ARGUMENTS" in
+  start)
+    execute start
+  ;;
+  stop)
+    execute stop
+  ;;
+  setup)
+    execute setup
+  ;;
+  restart)
+    execute stop && execute start
+  ;;
+  reset-admin)
+    execute reset-admin
+  ;;
+  create-admin)
+    execute create-admin
+  ;;
+  cleanup)
+    garbage_collector
+  ;;
+  *)
+  cat << EOF
+Usage: seafile start|stop|restart|setup|create-admin|reset-admin|cleanup [-d <seafile-data-directory>]
+EOF
+  ;;
+esac

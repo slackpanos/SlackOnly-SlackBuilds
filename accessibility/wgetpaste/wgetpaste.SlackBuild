@@ -1,0 +1,91 @@
+#!/bin/sh
+
+# Slackware build script for wgetpaste
+
+# Written by B. Watson (yalhcru@gmail.com)
+
+# Licensed under the WTFPL. See http://www.wtfpl.net/txt/copying/ for details.
+
+# 20140818 bkw:
+# - Updated to 2.25.
+# - Rewrote man page in pod.
+
+# 20150124 bkw:
+# - Changed the default service from bpaste to dpaste, since bpaste
+#   seems to have stopped working.
+# - Get rid of zlin.dk service, as it's gone away.
+# - Tested all services. As of this writing, these services work:
+#     dpaste codepad gists poundpython
+#   These do NOT work:
+#     bpaste ca
+#   I haven't tried very hard to get the non-working ones to work, let me know
+#   if you manage it. I notice ca has captchas now, so it'll likely never
+#   work with a script.
+# - Documented non-working services in man page.
+# - Replaced no_gentooisms.diff with some sed stuff.
+# - Bumped BUILD to 2.
+
+# 20160721 bkw:
+# - Updated to 2.28.
+# - Leave default service as-is (it's now poundpython).
+# - Really remove no_gentooisms.diff.
+
+PRGNAM=wgetpaste
+VERSION=${VERSION:-2.28}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_SBo}
+
+ARCH=noarch
+
+ZSHDIR=/usr/share/zsh/site-functions
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+set -e
+
+rm -rf $PKG
+mkdir -p $TMP $OUTPUT $PKG/usr/bin $PKG/etc/$PRGNAM.d $PKG/usr/man/man1 $PKG/$ZSHDIR
+cd $TMP
+rm -rf $PRGNAM-$VERSION
+tar xvf $CWD/$PRGNAM-$VERSION.tar.bz2
+cd $PRGNAM-$VERSION
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+  -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+
+# Un-gentoo-ize the help and error messages, use wgetpaste_info for the
+# -i and -I options.
+
+sed -i \
+  -e 's,emerge --info,wgetpaste_info,g' \
+  -e 's,emerge x11-misc/,install ,g' \
+  -e 's,x11-misc/,,g' \
+  -e '/^INFO_ARGS/s,"[^"]*","",' \
+$PRGNAM
+
+# used to do this:
+##  -e '/^DEFAULT_SERVICE/s,bpaste,dpaste,' \
+## Set default paste service to something that works,
+## since bpaste has stopped working.
+# no longer needed as the default is now poundpython, per upstream.
+
+# No 'make install', do it manually:
+install -groot -oroot -m0755 $PRGNAM $PKG/usr/bin
+install -groot -oroot -m0644 _$PRGNAM $PKG/$ZSHDIR
+install -groot -oroot -m0644 $CWD/$PRGNAM.example $PKG/etc/$PRGNAM.conf.sample
+install -groot -oroot -m0755 $CWD/${PRGNAM}_info $PKG/usr/bin
+
+# Man page made from --help output, by way of POD.
+gzip -9c $CWD/$PRGNAM.1 > $PKG/usr/man/man1/$PRGNAM.1.gz
+
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}

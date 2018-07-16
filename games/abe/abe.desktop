@@ -1,0 +1,8 @@
+[Desktop Entry]
+Categories=Game;
+X-Desktop-File-Install-Version=1.0
+Name=abe
+Icon=abe
+Exec=abe
+Terminal=false
+Type=Application

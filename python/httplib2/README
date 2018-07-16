@@ -1,0 +1,4 @@
+A comprehensive HTTP client library that supports many features
+left out of other HTTP libraries.
+
+python3 is an optional (autodetected) dependency.

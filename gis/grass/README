@@ -1,0 +1,43 @@
+GRASS (Geographic Resources Analysis Support System) is a free Geographic
+Information System (GIS) used for geospatial data management and
+analysis, image processing, graphics/maps production, spatial modeling,
+and visualization.  GRASS is an official project of the Open Source
+Geospatial Foundation.
+
+The following options may be enabled:
+
+  mariadb        for mariadb (or mysql) database support
+
+  postgresql     for postgresql database support
+                 (requires postgresql)
+
+  sqlite         for sqlite database support
+
+  unixODBC       for ODBC support
+                 (requires unixODBC)
+
+  gmath          for the GRASS gmath library
+                 (requires both blas and lapack)
+
+  netcdf         for netcdf export
+                 (requires netcdf)
+
+  libLAS         for LAS LiDAR file support
+                 (requires libLAS)
+
+  opencl         for OpenCL GPU acceleration
+                 (requires opencl-headers, either nvidia-driver or amd-app-sdk,
+                 and suitable GPU hardware)
+
+The options you require must be specified by setting the variable ENABLE
+before running grass.SlackBuild, for example
+
+  ENABLE="sqlite,netcdf" ./grass.SlackBuild
+
+ffmpeg is an optional runtime dependency for the Animation tool
+(g.gui.module).
+
+If you need to make grass libraries available to other applications (e.g.
+qgis) do this:
+
+  echo /opt/grass/lib >> /etc/ld.so.conf && ldconfig

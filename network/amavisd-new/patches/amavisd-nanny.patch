@@ -1,0 +1,11 @@
+--- amavisd-nanny.orig	2016-04-26 22:59:42.227807804 -0500
++++ amavisd-nanny	2016-04-26 23:04:19.361010891 -0500
+@@ -61,7 +61,7 @@
+ 
+ my($dbfile) = 'nanny.db';
+ my($db_home) =  # DB databases directory
+-  defined $ENV{'AMAVISD_DB_HOME'} ? $ENV{'AMAVISD_DB_HOME'} : '/var/amavis/db';
++  defined $ENV{'AMAVISD_DB_HOME'} ? $ENV{'AMAVISD_DB_HOME'} : '/var/lib/amavis/db';
+ my($wakeuptime) = 2;  # -w, sleep time in seconds, may be fractional
+ my($repeatcount);     # -c, repeat count (when defined)
+ 

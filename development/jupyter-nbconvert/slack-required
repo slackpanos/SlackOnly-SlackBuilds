@@ -1,0 +1,9 @@
+ConfigParser
+Jinja2
+Pygments
+bleach
+entrypoints
+jupyter-nbformat
+mistune
+pandocfilters
+testpath

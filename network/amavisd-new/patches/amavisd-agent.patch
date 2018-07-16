@@ -1,0 +1,11 @@
+--- amavisd-agent.orig	2016-04-26 22:59:27.573691233 -0500
++++ amavisd-agent	2016-04-26 23:03:34.388653565 -0500
+@@ -53,7 +53,7 @@
+ 
+ my($dbfile) = 'snmp.db';
+ my($db_home) =  # DB databases directory
+-  defined $ENV{'AMAVISD_DB_HOME'} ? $ENV{'AMAVISD_DB_HOME'} : '/var/amavis/db';
++  defined $ENV{'AMAVISD_DB_HOME'} ? $ENV{'AMAVISD_DB_HOME'} : '/var/lib/amavis/db';
+ 
+ my($wakeuptime) = 10;  # -w, sleep time in seconds, may be fractional
+ my($repeatcount);      # -c, repeat count (when defined)

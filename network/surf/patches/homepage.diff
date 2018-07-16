@@ -1,0 +1,12 @@
+diff -Naur surf-2.0/surf.c surf-2.0.patched/surf.c
+--- surf-2.0/surf.c	2017-03-28 12:17:45.000000000 -0400
++++ surf-2.0.patched/surf.c	2017-06-25 01:33:34.501169322 -0400
+@@ -1751,7 +1751,7 @@
+ 	if (argc > 0)
+ 		arg.v = argv[0];
+ 	else
+-		arg.v = "about:blank";
++		arg.v = "@HOMEPAGE@";
+ 
+ 	setup();
+ 	c = newclient(NULL);

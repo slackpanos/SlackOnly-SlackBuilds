@@ -1,0 +1,105 @@
+#!/bin/sh
+
+# Slackware build script for fgo
+
+# Copyright 2013-2017 Philip Lacroix <slackph at posteo dot de>
+# All rights reserved.
+#
+# Redistribution and use of this script, with or without modification, is
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE AUTHOR "AS IS" AND ANY EXPRESS OR IMPLIED
+#  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+#  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO
+#  EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+#  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+#  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+#  OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+#  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+#  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+#  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+PRGNAM=fgo
+VERSION=${VERSION:-1.5.5}
+BUILD=${BUILD:-2}
+TAG=${TAG:-_SBo}
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i586 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=${PKG:-$TMP/package-$PRGNAM}
+OUTPUT=${OUTPUT:-/tmp}
+
+set -e
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $PRGNAM
+tar xvf $CWD/$PRGNAM-$VERSION.tar.gz
+
+cd $PRGNAM
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+  -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+
+PRGDIR=$PKG/opt/$PRGNAM
+PRGDAT=$PKG/opt/$PRGNAM/data
+PRGSHR=$PKG/usr/share
+PRGDOC=$PKG/usr/doc
+PRGETC=$PKG/etc
+
+# Copy files to destination.
+mkdir -p $PRGDIR
+cp -a * $PRGDIR/
+
+# Set permissions of the executable file and create symlink.
+mkdir -p $PKG/usr/bin
+chmod 755 $PRGDIR/$PRGNAM
+ln -sf /opt/$PRGNAM/$PRGNAM $PKG/usr/bin/
+
+# Create symlink to config directory.
+mkdir -p $PRGETC
+ln -sf /opt/$PRGNAM/data/config $PRGETC/$PRGNAM
+
+# Create symlink to documentation.
+mkdir -p $PRGDOC
+ln -sf /opt/$PRGNAM/docs $PRGDOC/$PRGNAM-$VERSION
+
+# Create symlink to desktop file.
+mkdir -p $PRGSHR/applications
+ln -sf /opt/$PRGNAM/share/$PRGNAM.desktop $PRGSHR/applications/
+
+# Create symlinks to icons.
+for size in 16 24 32 48 64 128 256 scalable ; do
+  if [ $size != scalable ]; then ex=png; size=${size}x${size}; else ex=svg; fi
+  mkdir -p $PRGSHR/icons/hicolor/$size/apps
+  ln -sf /opt/$PRGNAM/share/icons/$size/$PRGNAM.$ex \
+         $PRGSHR/icons/hicolor/$size/apps/
+done
+
+# Don't clobber config files.
+for conf in $PRGDAT/config/* ; do
+  mv ${conf} ${conf}.new
+done
+
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+cat $CWD/slack-required > $PKG/install/slack-required
+cat $CWD/doinst.sh > $PKG/install/doinst.sh
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}

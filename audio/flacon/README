@@ -1,0 +1,27 @@
+flacon (Audio File Encoder)
+
+Flacon extracts individual tracks from one big audio file containing
+the entire album of music and saves them as separate audio files.
+
+To do this, it uses information from the appropriate CUE file. Also,
+Flacon makes it possible to conveniently revise or specify tags both
+for all tracks at once or for each tag separately.
+
+Features:
+
+ * Supported input formats: WAV, FLAC, APE, WavPack, True Audio (TTA).
+ * Supported output formats: FLAC, WAV, WavPack, AAC, OGG or MP3.
+ * Replay Gain analysis (album-gain and track-gain modes).
+ * Multi-threaded conversion process.
+ * Automatic character set detection for CUE files.
+ * Generation of the per-track CUE file in the output dir.
+
+And the optional dependencies:
+
+ * faac
+ * lame
+ * mac
+ * mp3gain
+ * opus-tools
+ * ttaenc
+ * vorbisgain

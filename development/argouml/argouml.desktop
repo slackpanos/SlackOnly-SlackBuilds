@@ -1,0 +1,11 @@
+[Desktop Entry]
+Version=1.0
+Exec=argouml
+TryExec=argouml
+Icon=argouml
+Terminal=false
+Name=ArgoUML
+GenericName=UML Modeling Tool
+Categories=Development;
+Type=Application
+StartupNotify=false

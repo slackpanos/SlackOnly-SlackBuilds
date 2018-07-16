@@ -1,0 +1,104 @@
+#!/bin/sh
+#
+# Slackware build script for listener.
+#
+# Distributed under the beerware licence:
+#
+# "THE BEER-WARE LICENSE" (Revision 42):
+# pwcazenave <at> gmail <dot> com wrote this file. As long as you retain this
+# notice you can do whatever you want with this stuff. If we meet some day,
+# and you think this stuff is worth it, you can buy me a beer in return
+# Pierre Cazenave
+#
+# Created 07/08/2008
+# Updated for Slackware64 28/05/2009
+# Updated to version 2.0.1 09/10/2011
+#
+
+# 20170813 bkw:
+# - take over maintenance. If you want to buy me a beer too, I won't stop you!
+# - update for v2.2 (which has been out for 4+ years now)
+# - include filter plugins in package
+# - add man page
+# - script cleanups
+
+PRGNAM=listener
+VERSION=${VERSION:-2.2}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_SBo}
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i586 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+if [ "$ARCH" = "i586" ]; then
+  SLKCFLAGS="-O2 -march=i586 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+  LIBDIRSUFFIX="64"
+else
+  SLKCFLAGS="-O2"
+  LIBDIRSUFFIX=""
+fi
+
+set -e
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $PRGNAM-$VERSION
+tar -xvf $CWD/$PRGNAM-$VERSION.tgz
+cd $PRGNAM-$VERSION
+chown -R root:root .
+find . -type f -exec chmod 644 {} +
+find . -type d -exec chmod 755 {} +
+
+# fix hardcoded config file path
+sed -i 's,/usr/local/etc,/etc,g' $PRGNAM.h manual.html
+
+# search for filter plugins here:
+FILTERDIR=/usr/lib$LIBDIRSUFFIX/$PRGNAM
+sed -i "s|-ldl|-Wl,-rpath,$FILTERDIR &|" Makefile
+
+# build the main program
+CFLAGS="$SLKCFLAGS" make
+
+# build (some of) the example filters
+mkdir -p $PKG/$FILTERDIR
+for i in deglitch highpass lowpass unspike; do
+  cd filter_lib_examples/$i
+    sed -i "s,^CFLAGS=,&$SLKCFLAGS ," Makefile
+    CFLAGS="$SLKCFLAGS" make
+    install -s *.so.* $PKG/$FILTERDIR
+  cd -
+done
+
+# easier to install manually than coerce 'make install' to play nice.
+mkdir -p $PKG/usr/bin $PKG/etc
+install -s -m0755 $PRGNAM set$PRGNAM $PKG/usr/bin
+cat $PRGNAM.conf > $PKG/etc/$PRGNAM.conf.new
+
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+cp -a license.txt manual.html $PKG/usr/doc/$PRGNAM-$VERSION
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+cat $CWD/slack-required > $PKG/install/slack-required
+cat $CWD/doinst.sh > $PKG/install/doinst.sh
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}

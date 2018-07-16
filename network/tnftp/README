@@ -1,0 +1,51 @@
+tnftp (command line FTP client)
+
+tnftp is a port of the NetBSD FTP client to other systems.
+
+The enhancements over the standard ftp client in 4.4BSD (and
+derivatives) include:
+  * command-line editing within ftp
+  * command-line fetching of URLS, including support for:
+      - http proxies (see $http_proxy, $ftp_proxy)
+      - authentication
+  * configurable prompt
+  * context sensitive command and filename completion
+  * dynamic progress bar
+  * feature negotiation extensions from RFC 2389
+    (see `feat' and `remopts')
+  * extensions to ftp from the IETF ftpext working group
+    (see `mlsd' and `mlst')
+  * IPv6 support (from the WIDE project, see *Note below)
+  * modification time preservation
+  * paging of local and remote files, and of directory listings
+    (see `lpage', `page', `pdir')
+  * passive mode support, with fallback to active mode
+  * retrieval of filenames listed in a given file (see `fget')
+  * `set option' override of ftp environment variables
+  * TIS Firewall Toolkit gate ftp proxy support (see `gate')
+  * transfer-rate throttling (see `-T', `rate')
+  * uploading of files on the command line (see `-u')
+  * (Dante) SOCKS5 support (see *Note, below)
+
+Previous features, currently disabled until a test system is available:
+  * SOCKS4 support
+
+*Note:
+If you need SOCKS5 support, install network/dante before building this.
+
+It's not possible to build a single tnftp binary with both IPv6 and
+SOCKS5 support.
+
+The binary with IPv6 support is built and installed as
+"/usr/bin/tnftp.ipv6", with a symlink to "/usr/bin/tnftp". If
+dante is installed, a 2nd binary is built and installed as
+"/usr/bin/tnftp.socks". You can run it as "tnftp.socks", or, if desired,
+adjust the symlink so the SOCKS binary is run by default:
+
+# rm -f /usr/bin/tnftp
+# ln -s tnftp.socks /usr/bin/tnftp
+
+The package will still uninstall cleanly.
+
+If you have dante installed but do not want to build tnftp with SOCKS,
+you can export SOCKS=no in the environment.

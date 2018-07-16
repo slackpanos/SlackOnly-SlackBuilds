@@ -1,0 +1,5 @@
+perl-Capture-Tiny
+perl-Config-Simple
+perl-DBD-SQLite
+perl-File-ReadBackwards
+perl-Unix-Syslog

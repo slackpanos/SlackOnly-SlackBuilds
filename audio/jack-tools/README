@@ -1,0 +1,22 @@
+This collection contains a bunch of small tools for JACK
+(jack-audio-connection-kit), written by Rohan Drape.
+
+Included utilities:
+
+jack-data - JACK audio data onto OSC
+jack-dl - JACK shared library dsp loader
+jack-lxvst - Linux native VSTi host. Not included by default.
+             See README_VST.txt for details.
+jack-osc - JACK Transport Publication Daemon
+jack-play - JACK Sound File Player
+jack-plumbing - JACK Plumbing Daemon
+jack-record - JACK Capture Client
+jack-scope - JACK Oscilloscope
+jack-transport - Minimalist Jack Transport Interface
+jack-udp - JACK UDP Transport Client
+
+This package uses POSIX filesystem capabilities to execute with
+elevated privileges (required for realtime audio processing). This
+may be considered a security/stability risk. Please read
+http://www.slackbuilds.org/caps/ for more information. To disable
+capabilities, pass SETCAP=no to the script.

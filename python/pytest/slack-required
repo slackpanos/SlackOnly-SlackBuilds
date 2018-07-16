@@ -1,0 +1,7 @@
+atomicwrites
+attrs
+more-itertools
+pluggy
+py
+setuptools-scm
+six

@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=P4V
+GenericName=Perforce Visual Client
+Exec=p4v
+Icon=P4-V
+Categories=Development;
+Terminal=false
+Type=Application

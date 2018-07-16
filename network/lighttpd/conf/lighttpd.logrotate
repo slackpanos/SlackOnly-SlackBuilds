@@ -1,0 +1,16 @@
+/var/log/lighttpd/*.log {
+	su @USER@ @GROUP@
+	daily
+	missingok
+	copytruncate
+	rotate 7
+	create 0644 @USER@ @GROUP@
+	compress
+	notifempty
+	sharedscripts
+	postrotate
+	if [ -x /etc/rc.d/rc.lighttpd -a -f /var/run/lighttpd.pid ]; then
+		/etc/rc.d/rc.lighttpd reload
+	fi
+	endscript
+}

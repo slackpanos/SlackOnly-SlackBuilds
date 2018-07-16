@@ -1,0 +1,12 @@
+Rover is a file browser for the terminal.
+
+The main goal is to provide a faster way to explore a file system from
+the terminal, compared to what's possible by using cd, ls, etc. Rover
+has vi-like key bindings for navigation and can open files in $PAGER
+and $EDITOR. Basic file system operations are also implemented. Rover
+is designed to be simple, fast and portable.
+
+CUSTOMIZATION
+-------------
+To customize rover, copy config.h from the source directory to the
+the SlackBuild directory and edit it before running the SlackBuild.

@@ -1,0 +1,6 @@
+flask-paginate
+gunicorn
+monty
+pymongo
+python-dateutil
+python-tabulate

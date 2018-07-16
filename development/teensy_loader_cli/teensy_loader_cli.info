@@ -1,0 +1,12 @@
+PRGNAM="teensy_loader_cli"
+VERSION="2.0"
+HOMEPAGE="https://www.pjrc.com/teensy/loader_cli.html"
+DOWNLOAD="https://www.pjrc.com/teensy/teensy_loader_cli.2.0.tar.gz \
+          http://ponce.cc/slackware/sources/repo/49-teensy.rules"
+MD5SUM="29376dce1b37826c91839a53cff75dc0 \
+        9f0593b4f3dab6d9a32ebc993d6aedc3"
+DOWNLOAD_x86_64=""
+MD5SUM_x86_64=""
+REQUIRES=""
+MAINTAINER="Felix Pfeifer"
+EMAIL="pfeifer[dot]felix[at]googlemail[dot]com"

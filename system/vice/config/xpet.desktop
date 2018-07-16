@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=VICE PET emulator
+Comment=Commodore PET emulator from the VICE team
+StartupNotify=true
+Exec=xpet
+Icon=vice
+Terminal=false
+Type=Application
+Categories=System

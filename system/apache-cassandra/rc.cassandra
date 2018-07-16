@@ -1,0 +1,76 @@
+#!/bin/bash
+
+export JAVA="/usr/lib64/java/bin/java"
+export CASSANDRA_HOME="/opt/apache-cassandra"
+export CASSANDRA_CONF="$CASSANDRA_HOME/conf"
+export CASSANDRA_INCLUDE="$CASSANDRA_HOME/tools/bin/cassandra.in.sh"
+
+PRG="cassandra"
+DIR="/opt/apache-cassandra/bin/"
+PID_DIRECTORY="/var/run"
+PID_FILE="$PID_DIRECTORY/$PRG.pid"
+
+function isRunning() {
+[[ ! -f "$PID_FILE" ]] && return 1
+PID="$(<"$PID_FILE")"
+[[ -z "$PID" ]] && return 1
+[[ ! $(ps -p $PID | grep $PID) == "" ]] && RV=0 || RV=1
+return $RV
+}
+
+function status() {
+isRunning
+STATUS=$?
+if [[ $STATUS -eq 0 ]]; then
+    echo -e "Service $PRG is running"
+else
+    echo -e "Service $PRG is not running."
+fi
+}
+
+function start() {
+isRunning
+STATUS=$?
+if [[ $STATUS -eq 0 ]]; then
+    echo -e "Service $PRG is already running."
+else
+    echo -e "Start service $PRG"
+    $DIR$PRG -p $PID_FILE > /dev/null 2>&1 &
+fi
+}
+
+function stop() {
+isRunning
+STATUS=$?
+if [[ $STATUS -eq 0 ]]; then
+    echo -e "Stop service $PRG"
+    PID="$(<"$PID_FILE")"
+    kill $PID
+    rm "$PID_FILE"
+else
+    echo -e "Service $PRG not running."
+fi
+}
+
+case $1 in 
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    restart)
+        start
+        sleep 1
+        stop
+        ;;
+    status)
+        status
+        ;;
+    *)   	
+        echo "Usage: $0 {start|stop|restart|status}"
+        exit 1
+        ;;
+esac
+
+exit 0

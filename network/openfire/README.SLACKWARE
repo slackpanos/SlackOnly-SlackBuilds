@@ -1,0 +1,25 @@
+## Startup
+
+To have this start upon each boot, add the following lines to
+/etc/rc.d/rc.local
+
+  # Start openfire
+  if [ -x /etc/rc.d/rc.openfire ]; then
+    /etc/rc.d/rc.openfire start
+  fi
+
+You will also want to put the following into /etc/rc.d/rc.local_shutdown
+(if that file does not exist, create it and make it executable):
+
+  # Stop openfire
+  if [ -x /etc/rc.d/rc.openfire ]; then
+    /etc/rc.d/rc.openfire stop
+  fi
+
+
+## Setup
+
+For information about setup see:
+http://www.howtoforge.com/how-to-set-up-an-openfire-instant-messaging-server-on-centos-5.6
+http://www.igniterealtime.org/builds/openfire/docs/latest/documentation/database.html
+http://www.igniterealtime.org/builds/openfire/docs/latest/documentation/install-guide.html

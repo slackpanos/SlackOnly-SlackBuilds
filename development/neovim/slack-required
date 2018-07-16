@@ -1,0 +1,7 @@
+libtermkey
+libuv
+libvterm
+lua-lpeg
+lua-mpack
+luajit
+msgpack-c

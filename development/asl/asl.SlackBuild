@@ -1,0 +1,145 @@
+#!/bin/sh
+
+# Slackware build script for asl
+# Originally written by Oleg O. Chukaev <email removed>
+
+# Modified and currently maintained by B. Watson <yalhcru@gmail.com>.
+# Original version had no license. Modified version released under the
+# WTFPL. See http://www.wtfpl.net/txt/copying/ for details.
+
+# 20180615 bkw: update for 142_bld134.
+
+# 20180103 bkw: update for 142_bld123. Fixes the problem where the
+# docs were installed to / instead of /usr/doc/$PRGNAM-$VERSION.
+
+# 20170926 bkw:
+# - take over maintenance
+# - update for 142_bld119
+# - i486 => i586
+# - clean up the documentation mess, add DOCTYPES with sane default
+# - don't install compile instructions in /usr/doc
+# - add UTF8 option (default off)
+# - nitpick README and slack-desc
+# - run test suite, include results in doc dir
+
+PRGNAM=asl
+SRCNAM=asl-current
+VERSION=${VERSION:-142_bld134}
+SRCVER=$(echo $VERSION | tr _ -)
+BUILD=${BUILD:-1}
+TAG=${TAG:-_SBo}
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i586 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+if [ "$ARCH" = "i586" ]; then
+  SLKCFLAGS="-O2 -march=i586 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+  LIBDIRSUFFIX="64"
+else
+  SLKCFLAGS="-O2"
+  LIBDIRSUFFIX=""
+fi
+
+set -e
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $SRCNAM
+tar xvf $CWD/$SRCNAM-$SRCVER.tar.?z*
+cd $SRCNAM
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+  -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+
+sed -e "/^CFLAGS/s,=.*,= $SLKCFLAGS," \
+    -e 's,/local,,' \
+    -e "s,/lib,&$LIBDIRSUFFIX," \
+    -e "s,doc/.*,doc/$PRGNAM-$VERSION," \
+    < Makefile.def.tmpl \
+    > Makefile.def
+
+# Slackware standard is still non-utf8 locales in 14.2.
+UTF8="${UTF8:-no}"
+[ "$UTF8" = "yes" ] && \
+  sed -i 's/CHARSET_ISO8859_1/CHARSET_UTF8/' Makefile.def
+
+# binaries are already stripped, no symlinks in man pages.
+make -j1 binaries install PREFIX=$PKG DOCPATH=""
+gzip -9 $PKG/usr/man/man?/*.?
+
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+
+[ "${TESTS:-yes}" = "yes" ] && \
+  make -j1 test > $PKG/usr/doc/$PRGNAM-$VERSION/test_suite.log 2>&1
+
+# Don't use 'make docs', we don't need to waste time converting the
+# same documentation into multiple formats (html, ps, pdf, plain text)
+# unless the user really wants to. Also, "make docs" followed by "make
+# install" results in a mess, the /usr/doc dir ends up containing all
+# the converted formats, plus the TeX source, plus all the temporary
+# files created during the doc build. The stuff below is more work than
+# I really wanted to do, but...
+
+DOCTYPES="${DOCTYPES:-html}"
+
+for doctype in $DOCTYPES; do
+  for lang in EN DE; do
+    case "$doctype" in
+      html)
+        make tex2html
+        make -C doc_$lang as.html TEX2HTML=../tex2html
+        cat doc_$lang/as.html > $PKG/usr/doc/$PRGNAM-$VERSION/as-$lang.html
+        ;;
+      pdf)
+        make -C doc_$lang as.pdf TEX2HTML=../tex2html
+        cat doc_$lang/as.pdf > $PKG/usr/doc/$PRGNAM-$VERSION/as-$lang.pdf
+        ;;
+      ps)
+        make -C doc_$lang as.ps TEX2HTML=../tex2html
+        cat doc_$lang/as.ps > $PKG/usr/doc/$PRGNAM-$VERSION/as-$lang.ps
+        ;;
+      txt)
+        make tex2doc
+        make -C doc_$lang as.doc TEX2DOC=../tex2doc
+        cat doc_$lang/as.doc > $PKG/usr/doc/$PRGNAM-$VERSION/as-$lang.txt
+        ;;
+      *)
+        echo "Unknown value for DOCTYPES, valid types are: html pdf ps txt" 1>&2
+        exit 1
+        ;;
+    esac
+  done
+done
+
+cp -a BENCHES README README.LANGS TODO changelog \
+    $PKG/usr/doc/$PRGNAM-$VERSION
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+
+mkdir -p $PKG/install
+sed -e "s,@UTF8@,$UTF8," \
+    -e "s,@DOCTYPES@,$DOCTYPES," \
+    $CWD/slack-desc \
+    > $PKG/install/slack-desc
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}

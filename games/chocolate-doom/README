@@ -1,0 +1,31 @@
+Chocolate Doom is a Doom source port that accurately reproduces the
+experience of Doom and Doom II as they were played in the 1990s.
+
+Chocolate Doom also supports Heretic, Hexen, Strife, and Chex Quest.
+
+To play chocolate-doom, you need at least one of:
+  doom2.wad from Doom II
+  doom.wad from Registered Doom or Ultimate Doom
+  tnt.wad or plutonia.wad from Final Doom
+  doom1.wad from Shareware Doom (games/doom_shareware_data on SBo)
+  freedoom.wad from FreeDoom (games/freedoom on SBo)
+
+For chocolate-heretic:
+  heretic.wad from Registered Heretic
+  heretic1.wad from Shareware Heretic (games/heretic_shareware_data on SBo)
+
+For chocolate-hexen:
+  hexen.wad from Registered Hexen
+  hexdemo.wad from the Hexen demo (games/hexen_demo_data on SBo)
+
+For chocolate-strife:
+  strife1.wad from Registered Strife
+
+Place the WAD file(s) in /usr/share/games/doom.
+
+For Chex Quest, get chex.wad from the game, and chex.deh from
+https://www.doomworld.com/idgames/utils/exe_edit/patches/chexdeh, place
+them both in /usr/share/games/doom, and run: chocolate-doom -iwad chex.wad
+
+The Strife demo (strife0.wad) doesn't work with Chocolate Doom.
+Chex Quest 2 and 3 are not supported.

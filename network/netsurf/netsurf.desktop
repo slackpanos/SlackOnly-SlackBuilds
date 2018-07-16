@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Netsurf
+GenericName=Web Browser
+Comment=Lightweight web browser
+Exec=netsurf %U
+Icon=netsurf
+Terminal=false
+StartupNotify=false
+Categories=Network;
+MimeType=text/html;application/xhtml+xml;x-scheme-handler/http;x-scheme-handler/https;x-scheme-handler/geo;

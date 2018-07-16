@@ -1,0 +1,6 @@
+SQLAlchemy
+decorator
+pbr
+six
+sqlparse
+tempita

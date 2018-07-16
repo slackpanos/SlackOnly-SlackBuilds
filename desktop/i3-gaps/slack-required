@@ -1,0 +1,7 @@
+dmenu
+libev
+libxkbcommon
+perl-AnyEvent
+perl-JSON-XS
+xcb-util-xrm
+yajl

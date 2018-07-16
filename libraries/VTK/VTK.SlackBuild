@@ -1,0 +1,158 @@
+#!/bin/sh
+
+# Slackware build script for VTK
+
+# Copyright 2013,2014 Youjie Zhou <jmpopush@gmail.com>
+# All rights reserved.
+# Copyright 2016-2018 Christoph Willing,  Brisbane Australia
+# All rights reserved.
+#
+# Redistribution and use of this script, with or without modification, is
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE AUTHOR "AS IS" AND ANY EXPRESS OR IMPLIED
+#  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+#  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO
+#  EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+#  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+#  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+#  OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+#  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+#  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+#  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+
+PRGNAM=VTK
+VERSION=${VERSION:-8.1.1}
+SHORT_VERSION=${SHORT_VERSION:-8.1}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_SBo}
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i486 ;;
+    arm*) ARCH=arm ;;
+    *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+if [ "$ARCH" = "i486" ]; then
+  SLKCFLAGS="-O2 -march=i486 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+  LIBDIRSUFFIX="64"
+else
+  SLKCFLAGS="-O2"
+  LIBDIRSUFFIX=""
+fi
+
+# configure VTK features
+# (defaults suitable for OpenCASCADE, it's the only SBo package that depends on VTK)
+group_imaging="" ; [ "${IMAGING:-yes}" != "no" ] && group_imaging="-DVTK_Group_Imaging=true"
+group_mpi=""     ; [ "${MPI:-no}" != "no" ]      && group_mpi="-DVTK_Group_MPI=true"
+group_qt=""      ; [ "${QT:-yes}" != "no" ]      && group_qt="-DVTK_Group_Qt=true"
+group_tk=""      ; [ "${TK:-yes}" != "no" ]      && group_tk="-DVTK_Group_Tk=true"
+group_views=""   ; [ "${VIEWS:-no}" != "no" ]    && group_views="-DVTK_Group_Views=true"
+group_web=""     ; [ "${WEB:-no}" != "no" ]      && group_web="-DVTK_Group_Web=true"
+wrap_python=""   ; [ "${PYTHON:-yes}" != "no" ]  && wrap_python="-DVTK_WRAP_PYTHON=true"
+wrap_java=""     ; [ "${JAVA:-no}" != "no" ]     && wrap_java="-DVTK_WRAP_JAVA=true"
+wrap_tcl=""      ; [ "${TCL:-yes}" != "no" ]     && wrap_tcl="-DVTK_WRAP_TCL=true"
+
+
+set -e
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $PRGNAM-$VERSION
+tar xvf $CWD/$PRGNAM-$VERSION.tar.gz
+cd $PRGNAM-$VERSION
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+  -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+
+# patch CMakefile first for lib64 issue
+patch -p0 <$CWD/patch-handle-64bit.diff
+
+# -DVTK_CUSTOM_LIBRARY_SUFFIX and -DVTK_INSTALL_INCLUDE_DIR
+#   See https://bugs.archlinux.org/task/43378?project=5&cat[0]=33&string=vtk
+# -DVTK_USE_SYSTEM_*
+#   Use external deps for everything in Slackware, but not SBo (VTK's cmake
+#   tests are broken and unable to use external jsoncpp, proj, netcdf, hdf5 and
+#   gl2ps). That just leaves python-twisted -- use SBo for that, because the
+#   internal twisted overwrites SBo's if it's already installed :O
+
+mkdir -p build
+cd build
+  cmake \
+    -DCMAKE_C_FLAGS:STRING="$SLKCFLAGS" \
+    -DCMAKE_CXX_FLAGS:STRING="$SLKCFLAGS" \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DLIB_SUFFIX=$LIBDIRSUFFIX \
+    -DBUILD_SHARED_LIBS=ON \
+    -DVTK_CUSTOM_LIBRARY_SUFFIX="" \
+    -DVTK_INSTALL_INCLUDE_DIR:PATH=include/VTK \
+    $group_imaging \
+    $group_mpi \
+    $group_qt \
+    $group_tk \
+    $group_views \
+    $group_web \
+    $wrap_python \
+    $wrap_java \
+    $wrap_tcl \
+    -DVTK_USE_SYSTEM_EXPAT:BOOL=ON \
+    -DVTK_USE_SYSTEM_FREETYPE:BOOL=ON \
+    -DVTK_USE_SYSTEM_JPEG:BOOL=ON \
+    -DVTK_USE_SYSTEM_LIBXML2:BOOL=ON \
+    -DVTK_USE_SYSTEM_OGGTHEORA:BOOL=ON \
+    -DVTK_USE_SYSTEM_PNG:BOOL=ON \
+    -DVTK_USE_SYSTEM_TIFF:BOOL=ON \
+    -DVTK_USE_SYSTEM_ZLIB:BOOL=ON \
+    -DVTK_USE_SYSTEM_ZOPE:BOOL=ON \
+    -DVTK_USE_SYSTEM_TWISTED:BOOL=ON \
+    -DCMAKE_BUILD_TYPE=Release ..
+
+  make
+  make install DESTDIR=$PKG
+cd ..
+
+find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
+  | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
+
+mkdir -p $PKG/usr/lib${LIBDIRSUFFIX}/qt
+mv \
+  $PKG/usr/plugins/ \
+  $PKG/usr/lib${LIBDIRSUFFIX}/qt
+
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+cp -a \
+  CONTRIBUTING.md Copyright.txt README.md \
+  $PKG/usr/doc/$PRGNAM-$VERSION
+mv \
+  $PKG/usr/share/doc/vtk-$SHORT_VERSION/verdict/ \
+  $PKG/usr/doc/$PRGNAM-$VERSION
+rm -rf $PKG/usr/share/doc
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+cat $CWD/slack-required > $PKG/install/slack-required
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}

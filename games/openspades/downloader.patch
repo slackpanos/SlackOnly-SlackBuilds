@@ -1,0 +1,18 @@
+--- openspades-0.1.0/Resources/downloadpak.orig.sh	2017-01-29 09:46:23.949368286 +0200
++++ openspades-0.1.0/Resources/downloadpak.sh	2017-01-29 09:47:17.585697740 +0200
+@@ -24,11 +24,11 @@
+ PAK_NAME=$(basename "$PAK_URL")
+ OUTPUT_DIR="."
+ 
+-if [ -f "$PAK_NAME" ]; then
+-	exit 0
+-fi
++# if [ -f "$PAK_NAME" ]; then
++#	exit 0
++# fi
+ 
+-wget "$PAK_URL" -O "$PAK_NAME"
++# wget "$PAK_URL" -O "$PAK_NAME"
+ unzip -u  -o "$PAK_NAME" -d "$OUTPUT_DIR"
+ 
+ # relocate paks to the proper location

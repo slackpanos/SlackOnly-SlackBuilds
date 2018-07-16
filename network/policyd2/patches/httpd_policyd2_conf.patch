@@ -1,0 +1,20 @@
+--- httpd-policyd2.conf	2013-10-26 13:53:14.000000000 -0500
++++ httpd-policyd2.conf.new	2013-11-27 10:42:24.532100589 -0600
+@@ -8,11 +8,11 @@
+ # as well as the authors' long time involvement in large scale mail
+ # hosting industry.
+ 
+-Alias /cluebringer /usr/share/cluebringer/webui
++Alias /policyd2 @DOCROOT@/policyd2-webui
+ 
+-<Directory /usr/share/cluebringer/webui>
+-    # Comment out the following 3 lines to make web ui accessible from anywhere
+-    Order Deny,Allow
+-    Deny from all
+-    Allow from 127.0.0.1
++<Directory @DOCROOT@/policyd2-webui>
++    # Swap the commenting on the following two lines to make web ui 
++    # accessible from anywhere
++    Require ip 127.0.0.1
++    #Require all granted
+ </Directory>

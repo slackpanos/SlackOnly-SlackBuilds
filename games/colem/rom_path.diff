@@ -1,0 +1,87 @@
+diff -Naur a/ColEm/Coleco.c b/ColEm/Coleco.c
+--- a/ColEm/Coleco.c	2017-01-15 13:10:40.000000000 -0500
++++ b/ColEm/Coleco.c	2017-06-27 15:30:39.448547570 -0400
+@@ -19,6 +19,9 @@
+ #include <stdlib.h>
+ #include <ctype.h>
+ #include <unistd.h>
++#include <sys/types.h>
++#include <limits.h>
++#include <pwd.h>
+ 
+ #ifdef __WATCOMC__
+ #include <direct.h>
+@@ -111,6 +114,46 @@
+ #define feof(F)         gzeof((gzFile)(F))
+ #endif
+ 
++/* 20090929 bkw: smart_fopen() searches for ROMs in various places
++	you might expect them to live, on a UNIXey system. Also searches
++	for both upper- and lower-case filenames.  */
++static FILE *smart_fopen(const char *path, const char *mode) {
++	FILE *fp;
++	char lowercase_path[PATH_MAX + 1], filename[PATH_MAX + 1];
++	const char *p = path;
++	char *lp = lowercase_path;
++	struct passwd *ent;
++
++	while(*p) *lp++ = tolower(*p++);
++	*lp = '\0';
++
++	if( (fp = fopen(path, mode)) )
++		return fp;
++
++	if( (fp = fopen(lowercase_path, mode)) )
++		return fp;
++
++	sprintf(filename, "/usr/share/colem/%s", path);
++	if( (fp = fopen(filename, mode)) )
++		return fp;
++
++	sprintf(filename, "/usr/share/colem/%s", lowercase_path);
++	if( (fp = fopen(filename, mode)) )
++		return fp;
++
++	if( (ent = getpwuid(getuid())) && (ent->pw_dir) ) {
++		sprintf(filename, "%s/.colem/%s", ent->pw_dir, path);
++		if( (fp = fopen(filename, mode)) )
++			return fp;
++
++		sprintf(filename, "%s/.colem/%s", ent->pw_dir, lowercase_path);
++		if( (fp = fopen(filename, mode)) )
++			return fp;
++	}
++
++	return NULL;
++}
++
+ /** gethex() *************************************************/
+ /** Parse hexadecimal byte.                                 **/
+ /*************************************************************/
+@@ -212,7 +255,7 @@
+ 
+   /* COLECO.ROM: OS7 (ColecoVision BIOS) */
+   if(Verbose) printf("  Opening COLECO.ROM...");
+-  if(!(F=fopen("COLECO.ROM","rb"))) P="NOT FOUND";
++  if(!(F=smart_fopen("COLECO.ROM","rb"))) P="NOT FOUND";
+   else
+   {
+     if(fread(ROM_BIOS,1,0x2000,F)!=0x2000) P="SHORT FILE";
+@@ -223,7 +266,7 @@
+   if(!P)
+   {
+     if(Verbose) printf("OK\n  Opening WRITER.ROM...");
+-    if((F=fopen("WRITER.ROM","rb")))
++    if((F=smart_fopen("WRITER.ROM","rb")))
+     {
+       if(fread(ROM_WRITER,1,0x8000,F)==0x8000) ++AdamROMs;
+       fclose(F);
+@@ -235,7 +278,7 @@
+   if(!P&&AdamROMs)
+   {
+     if(Verbose) printf("  Opening EOS.ROM...");
+-    if((F=fopen("EOS.ROM","rb")))
++    if((F=smart_fopen("EOS.ROM","rb")))
+     {
+       if(fread(ROM_EOS,1,0x2000,F)==0x2000) ++AdamROMs;
+       fclose(F);

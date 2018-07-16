@@ -1,0 +1,50 @@
+PRGNAM="smlnj"
+VERSION="110.79"
+HOMEPAGE="http://www.smlnj.org/"
+DOWNLOAD="http://smlnj.cs.uchicago.edu/dist/working/110.79/boot.x86-unix.tgz \
+          http://smlnj.cs.uchicago.edu/dist/working/110.79/config.tgz \
+          http://smlnj.cs.uchicago.edu/dist/working/110.79/cm.tgz \
+          http://smlnj.cs.uchicago.edu/dist/working/110.79/compiler.tgz \
+          http://smlnj.cs.uchicago.edu/dist/working/110.79/runtime.tgz \
+          http://smlnj.cs.uchicago.edu/dist/working/110.79/system.tgz \
+          http://smlnj.cs.uchicago.edu/dist/working/110.79/MLRISC.tgz \
+          http://smlnj.cs.uchicago.edu/dist/working/110.79/smlnj-lib.tgz \
+          http://smlnj.cs.uchicago.edu/dist/working/110.79/ckit.tgz \
+          http://smlnj.cs.uchicago.edu/dist/working/110.79/nlffi.tgz \
+          http://smlnj.cs.uchicago.edu/dist/working/110.79/cml.tgz \
+          http://smlnj.cs.uchicago.edu/dist/working/110.79/eXene.tgz \
+          http://smlnj.cs.uchicago.edu/dist/working/110.79/ml-lpt.tgz \
+          http://smlnj.cs.uchicago.edu/dist/working/110.79/ml-lex.tgz \
+          http://smlnj.cs.uchicago.edu/dist/working/110.79/ml-yacc.tgz \
+          http://smlnj.cs.uchicago.edu/dist/working/110.79/ml-burg.tgz \
+          http://smlnj.cs.uchicago.edu/dist/working/110.79/pgraph.tgz \
+          http://smlnj.cs.uchicago.edu/dist/working/110.79/trace-debug-profile.tgz \
+          http://smlnj.cs.uchicago.edu/dist/working/110.79/heap2asm.tgz \
+          http://smlnj.cs.uchicago.edu/dist/working/110.79/smlnj-c.tgz \
+          http://smlnj.cs.uchicago.edu/dist/working/110.79/doc.tgz"
+MD5SUM="eae97476343f2920b4d6b1bec6b4c160 \
+        dbac9fb6b24ebdd342ebd1a52437ad7a \
+        a51bfb2babf288a0818eaecfb32769dd \
+        b414e4140e31e9ab1d0b260869c4b8fe \
+        59fb413276ba9ea31b1c9e0d00dab1de \
+        31522c0f5cb4bb20f1ef3244b176d530 \
+        b77ee764a928886b7ed0f9f15b638386 \
+        3b88bdae1540471ff0331b66d3d48db9 \
+        887f9331e306326438c756860037177a \
+        13b377b3302ec366f960b447545f6981 \
+        9ba759cacbe6375409474afbf216fa64 \
+        3d028ef0b16b773cb6c548c0440ef6c5 \
+        c23630e7d67825627d7965b9be859e11 \
+        5c289f04a6cf78f67e01a832bcbdf4e4 \
+        bf42f72810c3f9b5dba5dea58bc0f676 \
+        1f403e7f006e6cc432c7ee9ee4360be3 \
+        0cc02d012b859cf1f544e826ee47829c \
+        bc26eef5d21e5846e566f9fda12e556b \
+        3f76ce30f9d7fd66ef36c6968041848a \
+        b31ec4a19d6dc3f77cb01e34e02de2e8 \
+        64d83ab1a8755dd053a0f7c70df2ed19"
+DOWNLOAD_x86_64="UNSUPPORTED"
+MD5SUM_x86_64=""
+REQUIRES=""
+MAINTAINER="R. S. Ananda Murthy"
+EMAIL="rsamurti@gmail.com"

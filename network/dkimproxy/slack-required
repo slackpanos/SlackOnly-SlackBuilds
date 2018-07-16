@@ -1,0 +1,6 @@
+perl-Crypt-OpenSSL-RSA
+perl-Mail-DKIM
+perl-MailTools
+perl-Net-Server
+perl-digest-sha1
+perl-net-dns

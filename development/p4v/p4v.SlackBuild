@@ -1,0 +1,122 @@
+#!/bin/sh
+
+# Slackware build script for p4v
+
+# Copyright 2009 Raymond Bailey <GooseYArd@gmail.com>
+# All rights reserved.
+#
+# Redistribution and use of this script, with or without modification, is
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR ''AS IS'' AND ANY EXPRESS OR IMPLIED
+# WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+# EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+# OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+# OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+# ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+# Modified by the SlackBuilds.org --michiel
+#
+# Change History
+# ==========
+# Mon Aug 30 11:39:47 EDT 2010: add version discovery (rab)
+#
+
+set -e
+LOCALVER=`tar tf p4v.tgz 2> /dev/null | head -1 | cut -d- -f 2 | cut -d/ -f1`
+PRGNAM=p4v
+VERSION=${VERSION:-$LOCALVER}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_SBo}
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i586 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+if [ "$ARCH" = "i586" ]; then
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "i686" ]; then
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  LIBDIRSUFFIX="64"
+else
+  LIBDIRSUFFIX=""
+fi
+
+set -e
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $PRGNAM-$VERSION
+tar xvf $CWD/$PRGNAM.tgz
+cd $PRGNAM-$VERSION
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+  -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+
+mkdir -p $PKG/usr/lib${LIBDIRSUFFIX}
+# It would be a bad idea to copy p4v's qt.conf into /usr/bin
+rm bin/qt.conf
+cp -a bin $PKG/usr/bin
+mv lib/p4v $PKG/usr/lib${LIBDIRSUFFIX}/p4v
+mv lib/icu $PKG/usr/lib${LIBDIRSUFFIX}/p4v/icu
+
+# Adapt the path for lib/lib64
+sed -i "s%prefix/lib/%prefix/lib${LIBDIRSUFFIX}/%g" $PKG/usr/bin/$PRGNAM
+
+# ICU library path
+sed -i "s%lib${LIBDIRSUFFIX}/icu%lib${LIBDIRSUFFIX}/p4v/icu%g" $PKG/usr/bin/$PRGNAM
+
+# Add Qt plugin path through environment variable since we can't use qt.conf
+sed -i "s%export P4VRES%export P4VRES QT_PLUGIN_PATH=\$QT5DIR/plugins%g" $PKG/usr/bin/$PRGNAM
+
+# Copy to the other wrappers
+cp $PKG/usr/bin/$PRGNAM $PKG/usr/bin/p4merge
+cp $PKG/usr/bin/$PRGNAM $PKG/usr/bin/p4admin
+cp $PKG/usr/bin/$PRGNAM $PKG/usr/bin/p4vc
+
+find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
+  | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
+
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION/
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+
+mkdir -p $PKG/usr/share/applications
+for PRG in $PRGNAM p4admin p4merge; do
+  cat $CWD/$PRG.desktop > $PKG/usr/share/applications/$PRG.desktop
+done
+
+mkdir -p $PKG/usr/share/icons/hicolor/{16x16,32x32,48x48,96x96}/apps
+for PRG in P4-V P4-Admin P4-Merge; do
+  for SIZE in 16x16 32x32 48x48 96x96; do
+    ln -s ../../../../../lib${LIBDIRSUFFIX}/p4v/P4VResources/icons/${PRG}_${SIZE}.png \
+      $PKG/usr/share/icons/hicolor/$SIZE/apps/${PRG}.png
+  done
+done
+
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+cat $CWD/doinst.sh > $PKG/install/doinst.sh
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}

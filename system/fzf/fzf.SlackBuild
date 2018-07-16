@@ -1,0 +1,151 @@
+#!/bin/sh
+
+# Slackware build script for fzf
+
+# Copyright 2016-2018 Andrew Clemons, Wellington New Zealand
+# All rights reserved.
+#
+# Redistribution and use of this script, with or without modification, is
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE AUTHOR "AS IS" AND ANY EXPRESS OR IMPLIED
+#  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+#  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO
+#  EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+#  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+#  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+#  OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+#  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+#  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+#  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+PRGNAM=fzf
+VERSION=${VERSION:-0.17.4}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_SBo}
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i586 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+set -e
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $PRGNAM-$VERSION
+tar xvf $CWD/$PRGNAM-$VERSION.tar.gz
+cd $PRGNAM-$VERSION
+
+sed -i '/glide install/d' Makefile
+
+mkdir -p vendor/github.com
+
+for DEPENDENCY in bjwbell/gensimd/06eb18285485c0d572cc7f024050fc6cb652ed4c \
+                  codegangsta/cli/c6af8847eb2b7b297d07c3ede98903e95e680ef9 \
+                  gdamore/encoding/b23993cbb6353f0e6aa98d0ee318a34728f628b9 \
+                  gdamore/tcell/0a0db94084dfe181108c18508ebd312f12d331fb \
+                  lucasb-eyer/go-colorful/c900de9dbbc73129068f5af6a823068fc5f2308c \
+                  Masterminds/semver/15d8430ab86497c5c0da827b748823945e1cf1e1 \
+                  Masterminds/vcs/6f1c6d150500e452704e9863f68c2559f58616bf \
+                  mattn/go-isatty/66b8e73f3f5cda9f96b69efd03dd3d7fc4a5cdb8 \
+                  mattn/go-runewidth/14207d285c6c197daabb5c9793d63e7af9ab2d50 \
+                  mattn/go-shellwords/02e3cf038dcea8290e44424da473dd12be796a8a \
+                  mengzhuo/intrinsic/34b800838e0bcd9c5b6abd414e3ad03dc1a686b8 \
+                  mitchellh/go-homedir/b8bc1bf767474819792c23f32d8286a45736f1c6 \
+                  go-yaml/yaml/287cf08546ab5e7e37d55a84f7ed3fd1db036de5 ; do
+  DEPENDENCY_OWNER="$(echo "$DEPENDENCY" | cut -d/ -f1)"
+  DEPENDENCY_NAME="$(echo "$DEPENDENCY" | cut -d/ -f2)"
+  DEPENDENCY_REV="$(echo "$DEPENDENCY" | cut -d/ -f3)"
+
+  mkdir -p "vendor/github.com/$DEPENDENCY_OWNER"
+
+  tar xf "$CWD/$DEPENDENCY_NAME-$DEPENDENCY_REV.tar.gz"
+  mv "$DEPENDENCY_NAME-$DEPENDENCY_REV" "vendor/github.com/$DEPENDENCY_OWNER/$DEPENDENCY_NAME"
+done
+
+mkdir -p vendor/golang.org/x
+for DEPENDENCY in crypto/e1a4589e7d3ea14a3352255d04b6f1a418845e5e \
+                  net/a8b9294777976932365dabb6640cf1468d95c70f \
+                  sys/b90f89a1e7a9c1f6b918820b3daa7f08488c8594 \
+                  text/4ee4af566555f5fbe026368b75596286a312663a \
+                  tools/04447353bc504b9a5c02eb227b9ecd252e64ea20 ; do
+  DEPENDENCY_NAME="$(echo "$DEPENDENCY" | cut -d/ -f1)"
+  DEPENDENCY_REV="$(echo "$DEPENDENCY" | cut -d/ -f2)"
+
+  tar xf "$CWD/$DEPENDENCY_NAME-$DEPENDENCY_REV.tar.gz"
+  mv "$DEPENDENCY_NAME-$DEPENDENCY_REV" "vendor/golang.org/x/$DEPENDENCY_NAME"
+done
+
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+  -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+
+make
+
+mkdir -p $PKG/usr/bin
+install -m 0755 target/fzf-linux_* $PKG/usr/bin/fzf
+install -m 0755 bin/fzf-tmux $PKG/usr/bin/fzf-tmux
+
+find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
+  | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
+
+mkdir -p $PKG/usr/man/man1
+install -m 0644 man/man1/fzf.1 $PKG/usr/man/man1/fzf.1
+
+find $PKG/usr/man -type f -exec gzip -9 {} \;
+for i in $( find $PKG/usr/man -type l ) ; do ln -s $( readlink $i ).gz $i.gz ; rm $i ; done
+
+mkdir -p $PKG/usr/share/bash-completion/completions/
+install -m 0644 shell/completion.bash $PKG/usr/share/bash-completion/completions/fzf
+
+mkdir -p $PKG/usr/share/zsh/site-functions/
+install -m 0644 shell/completion.zsh $PKG/usr/share/zsh/site-functions/_fzf
+
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+cp -a \
+  BUILD.md CHANGELOG.md LICENSE README-VIM.md README.md shell/key-bindings.zsh shell/key-bindings.bash \
+  $PKG/usr/doc/$PRGNAM-$VERSION
+
+chmod 0755 $PKG/usr/doc/$PRGNAM-$VERSION/key-bindings.*
+
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+
+WITH_VIM=${WITH_VIM:-yes}
+if [ "$WITH_VIM" = "yes" ] ; then
+  mkdir -p $PKG/usr/share/vim/vimfiles/plugin
+  install -m 0644 plugin/fzf.vim $PKG/usr/share/vim/vimfiles/plugin
+
+  # neovim support
+  mkdir -p $PKG/usr/share/nvim/runtime/plugin
+  (
+    cd $PKG/usr/share/nvim/runtime
+
+    ln -s ../../../vim/vimfiles/plugin/fzf.vim plugin/fzf.vim
+  )
+else
+  mkdir -p $PKG/usr/share/fzf/vim/
+  install -m 0644 plugin/fzf.vim $PKG/usr/share/fzf/vim/
+fi
+
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+cat $CWD/slack-required > $PKG/install/slack-required
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}

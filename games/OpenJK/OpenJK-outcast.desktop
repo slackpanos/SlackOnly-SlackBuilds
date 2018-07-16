@@ -1,0 +1,8 @@
+[Desktop Entry]
+Type=Application
+Name=Jedi Outcast (Single)
+Comment=A Linux port of Star Wars Jedi Knight II: Jedi Outcast
+Icon=OpenJK-outcast
+Exec=/opt/JediOutcast/openjo_sp.TARGETARCH
+Terminal=false
+Categories=Game;

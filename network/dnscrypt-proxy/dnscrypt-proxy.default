@@ -1,0 +1,22 @@
+# /etc/default/dnscrypt-proxy
+
+# This file contains additional configuration settings for dnscrypt-proxy
+# (primary configuration belongs in the dnscrypt-proxy configuration file).
+# This file supports configuring and running multiple instances (see the bottom
+# of this file for a sample secondary configuration).
+
+# CHROOTDIR should be the same path as the daemon user's home directory. For
+# the standard dnscrypt user this should be "/run/dnscrypt". For nobody, this
+# should be "/".
+CHROOTDIR[0]="/run/dnscrypt"
+#CHROOTDIR[0]="/"
+
+# DNSCRYPTCONFIG should be the path to the dnscrypt-proxy configuration file
+# for the given instance. Note that PidFile must be defined in the config for
+# the rc.dnscrypt start/stop script to function properly!
+DNSCRYPTCONFIG[0]="/etc/dnscrypt-proxy.conf"
+
+# A simple example configuration for a second instance (note that this would
+# require a new dnscrypt-proxy configuration file)
+#CHROOTDIR[1]="/run/dnscrypt"
+#DNSCRYPTCONFIG[1]="/etc/dnscrypt-proxy-1.conf"

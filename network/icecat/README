@@ -1,0 +1,30 @@
+GNUzilla is the GNU version of the Mozilla suite, and GNU IceCat is
+the GNU version of the Firefox browser. Its main advantage is an
+ethical one: it is entirely free software. While the Firefox source
+code from the Mozilla project is free software, they distribute and
+recommend non-free software as plug-ins and addons. Also their
+trademark license restricts distribution in several ways incompatible
+with freedom 0.
+
+Icecat's additional privacy features are in form of browser addons.
+This SlackBuild unbundles them so that users can install the ones they
+want in the usual way:
+
+* SpyBlock is a fork of Adblock Plus with extra privacy features.
+
+* Https Everywhere automatically encrypts your communications with
+  many major websites, making your browsing more secure.
+
+* HTML5 Video Everywhere enables popular video sites to use the
+  browser's built-in video player.
+
+* LibreJS blocks javascript scripts unless they are tagged as free
+  software [EXPERIMENTAL]
+
+* AboutIceCat adds a custom "about:icecat" homepage with links to
+  information about the free software and privacy features in IceCat,
+  and checkboxes to enable and disable the ones more prone to break
+  websites. [COSMETIC]
+
+Disabled addons can be found in:
+/usr/lib${LIBDIRSUFFIX}/icecat-$VERSION/browser/disabled-extensions

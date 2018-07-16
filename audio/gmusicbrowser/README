@@ -1,0 +1,17 @@
+gmusicbrowser (open-source jukebox for large collections)
+
+Customizable open-source jukebox for large collections.
+
+Optional dependencies:
+
+ * gst-plugins-bad:  mpc support for the gstreamer backend;
+ * gst-plugins-ugly: mp3 support for the gstreamer backend;
+ * gst0-plugins-bad:  mpc support for the gstreamer0.10 backend;
+ * gst0-plugins-ugly: mp3 support for the gstreamer0.10 backend;
+ * perl-Glib-Object-Introspection: enables the gstreamer backend;
+ * perl-gstreamer: enables the old gstreamer0.10 backend;
+ * perl-Gtk2-Notify: show notifications using libnotify;
+ * perl-trayicon: tray icon support;
+ * perl-html-parser: support for accented characters in lyrics plugin;
+ * mpv: enables the mpv backend;
+ * flac123: flac support for the ALSA backend.

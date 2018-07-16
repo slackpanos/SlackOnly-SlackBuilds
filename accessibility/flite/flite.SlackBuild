@@ -1,0 +1,171 @@
+#!/bin/sh
+
+# Slackware build script for flite
+# Originally written by Martin Lefebvre (email removed)
+# Now maintained by B. Watson (yalhcru@gmail.com), original author is MIA.
+
+# 20180612 bkw: update for 2.1 (or is it 2.1.0?)
+
+# 20170614 bkw:
+# - add ldflags patch from King Beowulf, to allow external programs
+#   to link correctly with libflite.so. BUILD=2.
+
+# 20150623 bkw:
+# - fix doc build failure with standalone SBo texi2html, thanks
+#   to John Vogel for investigating this
+# - add DOCS=no option, in case a future texi2html has more
+#   issues
+
+# 20150509 bkw:
+# - update for 2.0.0
+# - add HTML and .info docs
+# - add man page
+# - update HOMEPAGE
+# - add optional extra voice support
+
+# 20141020 bkw: fix handy-ruler, make VERSION respect environment.
+
+# 20130411 bkw: Updated for flite 1.4, added fix for parallel builds.
+# Removed --with-vox=cmu_us_kal16 configure flag (it doesn't seem to
+# do anything).
+# The updated version is released under the WTFPL, see
+# http://www.wtfpl.net/txt/copying/ for details.
+
+PRGNAM=flite
+VERSION=${VERSION:-2.1}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_SBo}
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i586 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+if [ "$ARCH" = "i586" ]; then
+  SLKCFLAGS="-O2 -march=i586 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+  LIBDIRSUFFIX="64"
+else
+  SLKCFLAGS="-O2"
+  LIBDIRSUFFIX=""
+fi
+
+set -e
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $PRGNAM-$VERSION-release
+tar xvf $CWD/$PRGNAM-$VERSION-release.tar.bz2
+cd $PRGNAM-$VERSION-release
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+ -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+
+# fix LDLAGS to allow external programs to find libflite.so
+patch -p1 < $CWD/flite-ldflags-fix.patch
+
+CFLAGS="$SLKCFLAGS" \
+CXXFLAGS="$SLKCFLAGS" \
+./configure \
+  --prefix=/usr \
+  --libdir=/usr/lib${LIBDIRSUFFIX} \
+  --sysconfdir=/etc \
+  --localstatedir=/var \
+  --with-audio=alsa \
+  --enable-shared \
+  --disable-static \
+  --build=$ARCH-slackware-linux
+
+# Fix builds with SBo standalone texi2html. The -number option works
+# with Slackware's ancient texi2html (from t/tetex), but would have to
+# be --number-sections in the newer SBo texi2html. It turns out section
+# numbering is enabled by default in both versions, so get rid of it...
+sed -i '/texi2html/s,-number,,' doc/Makefile
+
+make
+make install prefix=$PKG/usr INSTALLLIBDIR=$PKG/usr/lib${LIBDIRSUFFIX}
+
+# --disable-static is accepted by configure but totally ignored, so:
+rm -rf $PKG/usr/lib$LIBDIRSUFFIX/*.a
+
+find $PKG | xargs file | grep -e "executable" -e "shared object" | grep ELF \
+  | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
+
+# include any *.flitevox files the user downloaded.
+for file in $CWD/*.flitevox; do
+  [ -e "$file" ] && \
+    mkdir -p $PKG/usr/share/$PRGNAM && \
+    cat $file > $PKG/usr/share/$PRGNAM/"$( basename "$file" )" &&
+    EXTRA=yes
+done
+
+# build the docs. NB don't replace subshells with "cd dir" and
+# "cd -", as they don't nest.
+HTMLDOC=""
+if [ "${DOCS:-yes}" = "yes" ]; then
+  HTMLDOC="doc/html"
+  ( cd doc
+    # build the HTML docs.
+    make $PRGNAM.html
+    ( cd html
+  
+      # Upstream hardlinks index.html, use a symlink instead.
+      rm -f index.html
+      ln -s ${PRGNAM}_toc.html index.html
+  
+      # Also, we don't ship the PDF doc, so link to upstream's.
+      # Fix link to source package.
+      sed -i \
+        -e 's,HREF="flite.pdf",HREF="http://www.festvox.org/flite/doc/flite.pdf",' \
+        -e 's,\.tar\.gz,.tar.bz2,g' \
+        ${PRGNAM}_toc.html
+    )
+  
+    # build the GNU info docs
+    makeinfo $PRGNAM.texi
+    mkdir -p $PKG/usr/info
+    gzip -9c < $PRGNAM.info > $PKG/usr/info/$PRGNAM.info.gz
+  )
+fi
+
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+cp -a ACKNOWLEDGEMENTS COPYING README* $HTMLDOC doc/*.txt doc/alice \
+      $PKG/usr/doc/$PRGNAM-$VERSION
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+
+# man page written by SlackBuild author.
+mkdir -p $PKG/usr/man/man1
+gzip -9c < $CWD/$PRGNAM.1 > $PKG/usr/man/man1/$PRGNAM.1.gz
+
+mkdir -p $PKG/install
+
+# slack-desc gets a note if extra voices are included.
+if [ "$EXTRA" = "yes" ]; then
+  sed '15s,$, This package includes extra voices in /usr/share/flite/,' \
+      $CWD/slack-desc > $PKG/install/slack-desc
+else
+  cat $CWD/slack-desc > $PKG/install/slack-desc
+fi
+
+# doinst.sh needed because we append to /usr/info/dir.
+[ "${DOCS:-yes}" = "yes" ] && cat $CWD/doinst.sh > $PKG/install/doinst.sh
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}

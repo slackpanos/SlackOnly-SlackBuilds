@@ -1,0 +1,4 @@
+uptime: uptime (python uptime library)
+
+A cross-platform uptime library for Python. This module provides a
+cross-platform way to retrieve system uptime and boot time.

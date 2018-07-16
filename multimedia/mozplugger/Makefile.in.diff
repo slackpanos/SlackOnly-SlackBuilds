@@ -1,0 +1,32 @@
+diff -Naur mozplugger-2.1.4.orig/Makefile.in mozplugger-2.1.4/Makefile.in
+--- mozplugger-2.1.4.orig/Makefile.in	2013-11-17 12:09:16.000000000 -0600
++++ mozplugger-2.1.4/Makefile.in	2013-12-05 00:30:39.794211258 -0600
+@@ -266,17 +266,17 @@
+ 	make localinstall BROWSERDIR=.opera
+ 
+ install:
+-	-install -d @bindir@
+-	install mozplugger-helper @bindir@
+-	install mozplugger-controller @bindir@
+-	install mozplugger-linker @bindir@
+-	install mozplugger-update @bindir@
+-	-for a in ${PLUGINDIRS}; do install -d $$a ; done
+-	for a in ${PLUGINDIRS}; do install mozplugger.so $$a ; done
+-	-install -d @sysconfdir@
+-	install $(srcdir)/mozpluggerrc @sysconfdir@
+-	-install -d @mandir@/man7
+-	install $(srcdir)/mozplugger.7 @mandir@/man7/
++	-install -d $(root)/@bindir@
++	install mozplugger-helper $(root)/@bindir@
++	install mozplugger-controller $(root)/@bindir@
++	install mozplugger-linker $(root)/@bindir@
++	install mozplugger-update $(root)/@bindir@
++	-for a in ${PLUGINDIRS}; do install -d $(root)/$$a ; done
++	for a in ${PLUGINDIRS}; do install mozplugger.so $(root)/$$a ; done
++	-install -d $(root)/@sysconfdir@
++	install $(srcdir)/mozpluggerrc $(root)/@sysconfdir@
++	-install -d $(root)/@mandir@/man7
++	install $(srcdir)/mozplugger.7 $(root)/@mandir@/man7/
+ 
+ uninstall:
+ 	-rm -f @sysconfdir@/mozpluggerrc

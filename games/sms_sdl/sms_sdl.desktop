@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=SMS Plus/SDL
+GenericName=Sega Master System Emulator
+Exec=sms_sdl %f
+Icon=sms_sdl
+Terminal=false
+StartupNotify=false
+NoDisplay=true
+Categories=Game;Emulator;
+MimeType=application/x-sms-rom;

@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Android Studio
+GenericName=Android IDE
+Comment=Android development environment based on IntelliJ IDEA
+Exec=android-studio
+Icon=android-studio
+Path=/usr/share/android-studio/bin/
+Type=Application
+Categories=Development;
+Terminal=false

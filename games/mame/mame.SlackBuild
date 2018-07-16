@@ -1,0 +1,298 @@
+#!/bin/sh
+
+# Slackware build script for mame
+
+# Written by B. Watson (yalhcru@gmail.com)
+
+# Adapted from Erik W. Hanson's mame.SlackBuild for older mame versions,
+# which was originally adapted from sdlmame.SlackBuild by B. Watson.
+
+# Licensed under the WTFPL. See http://www.wtfpl.net/txt/copying/ for details.
+
+# 20180628 bkw: Updated for v0.199.
+# 20180612 bkw: Updated for v0.198 (missed a few releases...)
+# 20180130 bkw: Updated for v0.194.
+# 20180101 bkw: Updated for v0.193.
+# 20171210 bkw: Updated for v0.192.
+# 20170927 bkw: Updated for v0.190.
+
+# 20170902 bkw: Updated for v0.189.
+# - Fix complay.py build error. Turns out that the build would fail
+#   only on systems where PyXML is installed, so add -S to python
+#   command line so 'import xml.sax' imports the xml stuff that ships
+#   with core python, instead of the (outdated, deprecated) 3rd-party
+#   stuff from PyXML.
+# - Stop installing useless junk in /usr/doc.
+# - Install swlist docs.
+# - Compacted log entries.
+
+# 20170726 bkw: Updated for v0.188.
+# 20170702 bkw: Updated for v0.187.
+
+# 20170607 bkw: Updated for v0.186.
+# - Link with ld.gold instead of the default ld, which saves *2 hours* of
+#   build time on my test box (build is 3x as fast as it was).
+
+# 20170428 bkw: Updated for v0.185.
+
+# 20170404 bkw:
+# - mame.ini: get rid of $HOME in bgfx_path. Thanks to Doogster for
+# reporting this.
+
+# 20170330 bkw: Updated for v0.184.
+
+# 20170301 bkw:
+# - Use long-form github URL.
+# - Fix changelog so newer entries are at the top.
+
+# 20170223 bkw: Updated for v0.183.
+# 20170214 bkw: Add support for GroovyMAME patch.
+# 20170128 bkw: Updated for v0.182.
+# 20170111 bkw: Updated for v0.181. Missed a month again.
+# 20161101 bkw: Updated for v0.179.
+
+# 20160928 bkw:
+# - Updated for v0.178. Sorry, missed a month.
+# - Install artwork/ and bgfx/ so the new bgfx shader stuff will work.
+# - Set bgfx_path in mame.ini. The default is still 'video opengl' but
+#   now it's easy to enable bgfx, just by changing to 'video bgfx'.
+#   Thanks to Doogster for pointing this out.
+
+# 20160728 bkw:
+# - Updated for v0.176. Upstream does a release on the last Wednesday
+#   of every month. I doubt I'm going to find time to update this
+#   script 12 times a year, but maybe...
+
+# 20160721 bkw:
+# - Updated for v0.175 (again, after missing several releases)
+# - Update ARCH stuff, i486 => i586
+# - Add missing mame.6 and mess.6 man pages (whoops!)
+# - man pages now in docs/man/ instead of src/osd/sdl/
+# - Don't modify the *.1 man pages to put them in section 6 any more
+# - Symlink mame -> mess in /usr/games (to keep old frontends working)
+# - Disable QT debugger by default, as it now requires qt5 and I don't
+#   want qt5 as a hard dep for this... how many people who install mame
+#   are *really* going to debug the game ROM code?
+# - Add QTDEBUG=yes option for people who really want the debugger,
+#   make slack-desc say whether or not it's enabled.
+cat $CWD/slack-required > $PKG/install/slack-required
+# - Upstream removed 'testkeys', stop trying to install it.
+
+# 20151112 bkw:
+# - Updated for v0.167, after missing several releases (sorry!)
+# - Get rid of MESS and UME options, mame has basically turned
+#   into UME at this point (includes old mame + mess in one binary)
+# - Use shipped man pages from the source, instead of our own
+# - Add new tools: castool floptool imgtool nlwav
+# - Use icon extracted from mame.ico in the source
+# - Update .ini file slightly (sound=sdl, not sound=1)
+
+PRGNAM=mame
+VERSION=${VERSION:-0.199}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_SBo}
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i586 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=$TMP/package-${PRGNAM}
+OUTPUT=${OUTPUT:-/tmp}
+
+# NB nonstandard flags here. Upstream defaults to -O3, so we'll leave
+# that as-is. Only the arch-specific stuff goes here.
+if [ "$ARCH" = "i586" ]; then
+  SLKCFLAGS="-march=i586 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-march=i686 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-fPIC"
+  LIBDIRSUFFIX="64"
+else
+  SLKCFLAGS=""
+  LIBDIRSUFFIX=""
+fi
+
+# Source extracts to e.g. mame-mame0175/
+SHORTNAME=${PRGNAM}${VERSION/./}
+DIRNAME=$PRGNAM-$SHORTNAME
+
+set -e
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $DIRNAME
+tar xvf $CWD/$DIRNAME.tar.gz
+cd $DIRNAME
+chown -R root:root .
+
+# This isn't standard template code, but it executes maybe a hundred
+# times as fast, and does the same thing.
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -print0 | \
+  xargs -r -0 chmod 755
+find -L . \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+  -o -perm 440 -o -perm 400 \) -print0 | \
+  xargs -r -0 chmod 644
+
+# OK, building modern mame is a bit of a PITA. It uses genie (written
+# in lua, a fork of premake), but you don't get to run genie directly,
+# you got a main makefile that builds lua, then builds genie, then runs
+# genie with arguments based on the options in the main makefile. Also,
+# it uses python to convert XML layout files to C++ code.
+
+# Where possible, use system libraries instead of building the ones
+# bundled with the mame source. However, SBo's lua is (still!) too old
+# for mame.
+#USE_SYSTEM_LIB_LUA=1 \
+
+# Upstream dropped sqlite as a dependency, this no longer matters.
+#USE_SYSTEM_LIB_SQLITE3=1 \
+
+# Not going to USE_SYSTEM_LIB_PORTAUDIO or USE_SYSTEM_LIB_PORTMIDI,
+# the bundled versions are fine and I don't want a mile-long dependency
+# tree. Using an external portmidi dep would make mame require Oracle's
+# JDK! In case you're wondering, only the C code in the bundled portmidi
+# is built (no Java needed).
+
+# The OVERRIDE_CC and OVERRIDE_CXX are there because mame's build
+# ignores $PATH when searching for gcc/g++, and won't find my ccache
+# symlinks in /usr/local/bin. On a normal (non-ccache-using) system,
+# these options do nothing (they use the compilers in /usr/bin, which
+# is the default anyway) and you can forget about them... or, if you use
+# distcc, this will allow it to actually work. (Mini-rant: PATH has been
+# a standard mechanism on both Unix and DOS/Windows systems for what,
+# 30 or 40 years now? Come on people...)
+
+# This is purely cosmetic, and can't be set on the make command line.
+sed -i 's,ubuntu-intrepid,slackware,g' scripts/genie.lua
+sed -i 's/DISTRO := generic/DISTRO := slackware/' makefile
+
+# SDL_INI_PATH needs to contain a $ character. I haven't figured out
+# how (or even if) I can pass this through multiple layers of make
+# calling genie which calls make again, so screw it:
+sed -i 's,\.;ini,/etc,' src/osd/sdl/sdlmain.cpp
+
+# Tried several variants of this, none work, ended up using the sed
+# stuff above.
+#SDL_INI_PATH='$$HOME/.mame;/etc' \
+
+# Previous versions of mame used qt4 for the debugger GUI. Now it's
+# qt5, so I've made it optional (Slackware 14.2 still only has qt4).
+if [ "${QTDEBUG:-no}" = "yes" ]; then
+  QTOPT=1
+  WITHQT="with"
+else
+  QTOPT=0
+  WITHQT="without"
+fi
+
+# Now, let's check for GroovyMAME. All the user has to do is place
+# the .diff in the SlackBuild's directory. The filename always starts
+# with the MAME version number, minus its dots. If we find multiple
+# files matching this, sort them lexically and use the last (hopefully
+# this is the one with the highest version number).
+GROOVYDIFF="$( ls $CWD/${VERSION/./}_groovymame_*.diff 2>/dev/null | tail -1 )"
+if [ -e "$GROOVYDIFF" ]; then
+  GROOVYVER="$( basename $GROOVYDIFF .diff | cut -d_ -f3- | sed 's,-,_,g' )"
+
+  # .diffs are shipped with CRLF endings, fix:
+  sed 's,\r,,g' "$GROOVYDIFF" > groovy.diff
+
+  patch -p0 < groovy.diff
+
+  echo "GROOVYDIFF $GROOVYDIFF"
+  echo "GROOVYVER $GROOVYVER"
+fi
+
+
+# Having ARCH set in the env will break the build, hence ARCH="".
+# Using ld.gold is *much* faster, and I see no disadvantage to it.
+
+make USE_QTDEBUG=$QTOPT \
+     USE_SYSTEM_LIB_EXPAT=1 \
+     USE_SYSTEM_LIB_ZLIB=1 \
+     USE_SYSTEM_LIB_JPEG=1 \
+     USE_SYSTEM_LIB_FLAC=1 \
+     PYTHON_EXECUTABLE="/usr/bin/python -S" \
+     OPT_FLAGS="$SLKCFLAGS" \
+	  LDOPTS="-fuse-ld=gold" \
+     OVERRIDE_CC="$( which gcc )" \
+     OVERRIDE_CXX="$( which g++ )" \
+     ARCH="" \
+     VERBOSE=1 \
+     NOWERROR=1 \
+     TOOLS=1 \
+     TARGET=$PRGNAM \
+     SUBTARGET=$PRGNAM
+
+# No 'make install' target, do it manually.
+mkdir -p $PKG/usr/games $PKG/etc $PKG/usr/man/man6 $PKG/usr/man/man1 \
+         $PKG/usr/share/applications $PKG/usr/share/pixmaps
+
+# Deal with upstream's executable-naming silliness.
+[ -e ${PRGNAM}64 ] && mv ${PRGNAM}64 $PRGNAM
+[ -e ${PRGNAM}32 ] && mv ${PRGNAM}32 $PRGNAM
+
+# .desktop borrowed from Ludovic Lechapt's Debian package.
+# Icon extracted from src/mame/osd/windows/mame/mame.ico with icotool.
+cat $CWD/desktop/$PRGNAM.desktop > $PKG/usr/share/applications/$PRGNAM.desktop
+cat $CWD/desktop/$PRGNAM.png > $PKG/usr/share/pixmaps/$PRGNAM.png
+cat $CWD/$PRGNAM.ini > $PKG/etc/$PRGNAM.ini.new
+
+# Install the binaries:
+install -s -m0755 -oroot -groot \
+  $PRGNAM castool chdman floptool imgtool jedutil \
+  ldresample ldverify nltool nlwav pngcmp regrep \
+  romcmp split src2html srcclean unidasm \
+  $PKG/usr/games/
+
+ln -s $PRGNAM $PKG/usr/games/mess
+
+# Install the man pages. mame and mess still have separate man
+# pages, though the binaries are combined now.
+install -m0644 -oroot -groot docs/man/*.1 $PKG/usr/man/man1
+install -m0644 -oroot -groot docs/man/*.6 $PKG/usr/man/man6
+gzip -9 $PKG/usr/man/man?/*.?
+
+# Create empty dirs for the user to populate with ROMs and such.
+for i in roms samples ctrlr font cheat; do
+  mkdir -p $PKG/usr/share/games/$PRGNAM/$i
+done
+
+# Install the artwork and bgfx stuff (needed for 'video bgfx' in mame.ini).
+cp -a artwork bgfx $PKG/usr/share/games/$PRGNAM
+
+# CONTRIBUTING.md is a 1-byte placeholder, and we don't need a shell script.
+rm -f docs/CONTRIBUTING.md docs/update.sh
+
+mkdir -p $PKG/usr/doc/${PRGNAM}-$VERSION
+# can't just "cp docs/* ..." because man/ is a dir, set -e kills the script
+cp docs/L* docs/*.* $PKG/usr/doc/${PRGNAM}-$VERSION
+cp -a docs/swlist $PKG/usr/doc/${PRGNAM}-$VERSION
+cat $CWD/${PRGNAM}.SlackBuild > $PKG/usr/doc/${PRGNAM}-$VERSION/${PRGNAM}.SlackBuild
+
+mkdir -p $PKG/install
+sed "s,@WITHQT@,$WITHQT," $CWD/slack-desc > $PKG/install/slack-desc
+cat $CWD/slack-required > $PKG/install/slack-required
+
+[ -n "$GROOVYVER" ] && \
+  sed -i "19s,\$, This package was patched with GroovyMAME $GROOVYVER.," \
+  $PKG/install/slack-desc
+cat $CWD/slack-required > $PKG/install/slack-required
+
+cat $CWD/doinst.sh > $PKG/install/doinst.sh
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/${PRGNAM}-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}

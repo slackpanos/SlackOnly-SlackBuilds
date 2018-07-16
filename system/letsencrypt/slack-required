@@ -1,0 +1,16 @@
+configobj
+funcsigs
+josepy
+mock
+ndg_httpsclient
+psutil
+pyparsing
+pyrfc3339
+python-augeas
+python-configargparse
+python-parsedatetime
+python2-pythondialog
+pytz
+requests-toolbelt
+werkzeug
+zope.component

@@ -1,0 +1,134 @@
+#!/bin/sh
+
+# Slackware build script for ioquake3
+
+# Copyright 2017 Matt Dinslage, Springfield, MO
+# All rights reserved.
+#
+# Redistribution and use of this script, with or without modification, is
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+#  THIS SOFTWARE IS PROVIDED BY THE AUTHOR "AS IS" AND ANY EXPRESS OR IMPLIED
+#  WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+#  MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  IN NO
+#  EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+#  SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+#  PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+#  OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+#  WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+#  OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+#  ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+PRGNAM=ioquake3
+VERSION=${VERSION:-r20180602}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_SBo}
+
+# Setting the arch here overrides the Makefiles
+# arch setting which causes the build to fail
+# on 32bit machines, so we change this to BARCH
+# here and let the Makefile set the ARCH.
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) export BARCH=i586 ;;
+    arm*) export BARCH=arm ;;
+       *) export BARCH=$( uname -m ) ;;
+  esac
+else
+  BARCH="$ARCH"
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+if [ "$BARCH" = "i586" ]; then
+  SLKCFLAGS="-O2 -march=i586 -mtune=i686"
+  LIBDIRSUFFIX=""
+  ARCH="x86"
+elif [ "$BARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  LIBDIRSUFFIX=""
+  ARCH="x86"
+elif [ "$BARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+  LIBDIRSUFFIX="64"
+  ARCH="x86_64"
+else
+  SLKCFLAGS="-O2"
+  LIBDIRSUFFIX=""
+  ARCH="$BARCH"
+fi
+
+set -e
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $PRGNAM-$VERSION
+tar -xvf $CWD/$PRGNAM-$VERSION.tar.gz
+cd $PRGNAM-$VERSION
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+  -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+
+make \
+   release \
+   copyfiles \
+   ARCH="$ARCH" \
+   COPYDIR="$PKG"/usr/share/games/quake3 \
+   CFLAGS="$SLKCFLAGS" \
+   USE_CODEC_VORBIS=1 \
+   USE_CURL=1 \
+   USE_CURL_DLOPEN=0 \
+   USE_FREETYPE=1 \
+   BUILD_RENDERER_OPENGL2=1 \
+   USE_MUMBLE=1 \
+   USE_VOIP=1 \
+   USE_OPENAL=1 \
+   USE_OPENAL_DLOPEN=0 \
+   USE_INTERNAL_OGG=0 \
+   USE_INTERNAL_VORBIS=0 \
+   USE_INTERNAL_ZLIB=0 \
+   USE_INTERNAL_JPEG=0 \
+   USE_INTERNAL_LIBS=0 \
+   USE_CODEC_OPUS=1 \
+   USE_INTERNAL_OPUS=1 #build/use internal opus, this keeps the deps down to just SDL2 and OpenAL
+
+find $PKG -print0 | xargs -0 file | grep -e "executable" -e "shared object" | grep ELF \
+  | cut -f 1 -d : | xargs strip --strip-unneeded 2> /dev/null || true
+
+# update quake3 files to newest point release (1.32b)
+chmod +x $CWD/linuxq3apoint-1.32b-3.x86.run
+$CWD/linuxq3apoint-1.32b-3.x86.run --tar xf
+install -m 644 baseq3/*.pk3 $PKG/usr/share/games/quake3/baseq3
+install -m 644 missionpack/*.pk3 $PKG/usr/share/games/quake3/missionpack
+
+mkdir -p $PKG/usr/share/{applications,pixmaps}
+cat $CWD/$PRGNAM.desktop > $PKG/usr/share/applications/$PRGNAM.desktop
+install -m 644 $TMP/$PRGNAM-$VERSION/misc/quake3_flat.iconset/icon_512x512.png $PKG/usr/share/pixmaps/quake3.png
+
+# Add launcher
+mkdir $PKG/usr/games
+cat $CWD/launcher.ioquake3 > $PKG/usr/games/ioquake3
+chmod 0755 $PKG/usr/games/ioquake3
+
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+cp -a COPYING.txt README.md ChangeLog \
+  $PKG/usr/doc/$PRGNAM-$VERSION
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+cat $CWD/slack-required > $PKG/install/slack-required
+cat $CWD/doinst.sh > $PKG/install/doinst.sh
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$BARCH-$BUILD$TAG.${PKGTYPE:-tgz}

@@ -1,0 +1,12 @@
+PRGNAM="itcl"
+VERSION="3.4.1"
+HOMEPAGE="http://incrtcl.sourceforge.net/itcl/"
+DOWNLOAD="http://downloads.sourceforge.net/incrtcl/itcl3.4.1.tar.gz \
+          http://ponce.cc/slackware/sources/repo/tcl8.5.11-src.tar.xz"
+MD5SUM="e7c98e0f69df1a675073ddd3344f0b7f \
+        304a8ecc61d5db9e41f3653161997712"
+DOWNLOAD_x86_64=""
+MD5SUM_x86_64=""
+REQUIRES=""
+MAINTAINER="R. S. Ananda Murthy"
+EMAIL="rsamurti@gmail.com"

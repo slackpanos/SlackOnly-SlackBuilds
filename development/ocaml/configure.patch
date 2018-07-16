@@ -1,0 +1,13 @@
+--- configure_old	2014-05-23 22:45:22.000000000 +0200
++++ configure	2014-05-23 22:45:31.000000000 +0200
+@@ -1612,6 +1612,10 @@
+     nativecccompopts="$nativecccompopts -fomit-frame-pointer";;
+ esac
+ 
++# Add additional flags from the environment
++bytecccompopts="$bytecccompopts $CFLAGS"
++nativecccompopts="$nativecccompopts $CFLAGS"
++
+ # Finish generated files
+ 
+ cclibs="$cclibs $mathlib"

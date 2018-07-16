@@ -1,0 +1,9 @@
+[Desktop Entry]
+Version=1.0
+Name=TT
+Type=Application
+Terminal=true
+Exec=tt
+Icon=tt
+Categories=ConsoleOnly;Game;
+GenericName=Tetris for terminals

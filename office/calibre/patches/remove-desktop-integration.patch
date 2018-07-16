@@ -1,0 +1,13 @@
+diff -Naur calibre.orig/src/calibre/linux.py calibre/src/calibre/linux.py
+--- calibre.orig/src/calibre/linux.py	2012-06-29 04:53:39.000000000 +0000
++++ calibre/src/calibre/linux.py	2012-07-03 02:57:13.834849391 +0000
+@@ -177,9 +177,6 @@
+         self.mime_resources = []
+         if islinux or isbsd:
+             self.setup_completion()
+-        if islinux or isbsd:
+-            self.setup_desktop_integration()
+-        self.create_uninstaller()
+ 
+         from calibre.utils.config import config_dir
+         if os.path.exists(config_dir):

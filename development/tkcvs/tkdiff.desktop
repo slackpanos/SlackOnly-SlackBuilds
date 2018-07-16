@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=tkdiff
+Comment=Graphical Interface to the standard Unix 'diff' utility 
+Exec=tkdiff
+TryExec=tkdiff
+Icon=tkdiff
+Terminal=false
+Type=Application
+Categories=Development;
+StartupNotify=false

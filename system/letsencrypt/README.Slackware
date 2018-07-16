@@ -1,0 +1,54 @@
+PLUGINS SUPPORT
+letsencrypt support five plugins to obtain/install certificates and many more to come in the future.
+Using apache plugin is the recommended way as it doesn't require the webserver to be taken offline
+causing downtime during validation.
+
+All domain-spesific configuration files are stored in /etc/letsencrypt/live/<DOMAIN-NAME>
+Once certificate is created, you need to enable SSL module in httpd.conf and configure httpd-ssl.conf
+
+Since 0.14.1, letsencrypt is able to generate/renew all certificates for all of your configured vhost domains.
+Just run letsencrypt or certbot and you will see all domains are available.
+
+RENEWAL PROCESS
+Best way to automate the certificate renewal is by using cron service.
+Create a bash script in /etc/cron.monthly that does the following actions:
+  letsencrypt renew (it will automatically renew when the expired date is less than few weeks).
+
+RATE LIMIT
+Rate limit on registrations per IP is now 500 per 3 hours.
+Rate limit on certificates per Domain is now 20 per 7 days.
+See complete documentation here: https://letsencrypt.org/docs/rate-limits/
+
+CONFIGURATION FILES
+
+It is possible to specify configuration file with letsencrypt --config cli.ini (or shorter -c cli.ini).
+An example configuration file is shown below:
+
+# This is an example of the kind of things you can do in a configuration file.
+# All flags used by the client can be configured here. Run Let's Encrypt with
+# "--help" to learn more about the available options.
+
+# Use a 4096 bit RSA key instead of 2048
+rsa-key-size = 4096
+
+# Uncomment and update to register with the specified e-mail address
+# email = foo@example.com
+
+# Uncomment and update to generate certificates for the specified
+# domains.
+# domains = example.com, www.example.com
+
+# Uncomment to use a text interface instead of ncurses
+# text = True
+
+# Uncomment to use the apache authenticator
+# authenticator = apache
+
+# Uncomment to use the webroot authenticator. Replace webroot-path with the
+# path to the public_html / webroot folder being served by your web server.
+# authenticator = webroot
+# webroot-path = /usr/share/nginx/html
+
+By default, the following locations are searched:
+/etc/letsencrypt/cli.ini
+$XDG_CONFIG_HOME/letsencrypt/cli.ini (or ~/.config/letsencrypt/cli.ini if $XDG_CONFIG_HOME is not set).

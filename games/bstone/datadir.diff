@@ -1,0 +1,25 @@
+diff -Naur bstone-1.1.8/src/3d_main.cpp bstone-1.1.8.patched/src/3d_main.cpp
+--- bstone-1.1.8/src/3d_main.cpp	2017-08-06 06:52:35.000000000 -0400
++++ bstone-1.1.8.patched/src/3d_main.cpp	2017-08-07 12:33:38.268538355 -0400
+@@ -9658,20 +9658,7 @@
+ 
+ const std::string& get_default_data_dir()
+ {
+-    static std::string result;
+-    static auto is_initialized = false;
+-
+-    if (!is_initialized) {
+-        is_initialized = true;
+-
+-        auto sdl_dir = ::SDL_GetBasePath();
+-
+-        if (sdl_dir) {
+-            result = sdl_dir;
+-            ::SDL_free(sdl_dir);
+-        }
+-    }
+-
++    static std::string result = "/usr/share/games/bstone/";
+     return result;
+ }
+ // BBi

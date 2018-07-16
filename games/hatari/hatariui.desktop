@@ -1,0 +1,13 @@
+[Desktop Entry]
+Version=1.0
+Type=Application
+Name=Hatari UI
+Exec=hatariui %f
+Icon=hatari-icon
+Categories=Game;Emulator;
+Actions=Boot;
+MimeType=application/x-st-disk-image;application/x-st-executable;application/vnd.msa-disk-image;application/vnd.fastcopy-disk-image;application/x-stx-disk-image;
+
+[Desktop Action Boot]
+Name=Boot
+Exec=hatariui %f

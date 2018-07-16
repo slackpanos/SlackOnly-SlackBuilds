@@ -1,0 +1,23 @@
+MAME stands for Multiple Arcade Machine Emulator.  When used in conjunction 
+with images of the original arcade game's ROM and disk data, MAME attempts 
+to reproduce that game as faithfully as possible on a more modern general
+purpose computer.  MAME can currently emulate several thousand different 
+classic arcade video games from the late 1970s through the modern era.
+
+MESS (Multi Emulator Super System) is the sister project of MAME. MESS
+documents the hardware for a wide variety of (mostly vintage) computers,
+video game consoles, and calculators, as MAME does for arcade games.
+
+Modern versions of MAME now include MESS, so there's no need for a
+separate MESS build or binary.
+
+This build requires around 2GB of storage in /tmp (or whatever you set
+TMP to in the environment).
+
+Optionally, MAME can be built with a debugger for emulated ROM
+code. You don't need this just to play the games; it's mainly useful
+for developing MAME itself. To build the debugger, first install qt5,
+then set QTDEBUG=yes in the environment before building mame.
+
+Optionally, MAME can be built with the GroovyMAME patch. See
+README_groovy.txt for details.

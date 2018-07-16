@@ -1,0 +1,9 @@
+haskell-aeson
+haskell-attoparsec
+haskell-conduit
+haskell-enclosed-exceptions
+haskell-resourcet
+haskell-scientific
+haskell-text
+haskell-unordered-containers
+haskell-vector

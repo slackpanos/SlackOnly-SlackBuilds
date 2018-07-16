@@ -1,0 +1,11 @@
+wmSunMoon is Window Maker Sun, Moon, and time dockable application
+
+wmSunMoon displays Sun and Moon rise and set times as well as
+the Moon phase.  Around sunrise and sunset it emulates the civil
+twilight and golden hour effects.  It can also display the current
+time, the offset for the civil twilight and golden hour, and the
+percentage of the lunar cycle.  Unlike the other dockable
+applications it offers also a text mode displaying a lot of data on
+the console.
+Enter the valid latitude and longitude in order to display the valid
+data.  If necessary enter the local and distant time zones names.

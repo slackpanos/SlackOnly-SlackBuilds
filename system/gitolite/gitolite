@@ -1,0 +1,9 @@
+#!/bin/bash
+
+GL_USER=@GL_USER@
+
+if [ "$(whoami)" == "$GL_USER" ]; then
+  /usr/libexec/gitolite/gitolite ${@}
+else
+  sudo -u $GL_USER -- "$0" "$@"
+fi

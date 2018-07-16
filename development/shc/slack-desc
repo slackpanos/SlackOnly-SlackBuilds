@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.
+# Line up the first '|' above the ':' following the base package name, and
+# the '|' on the right side marks the last column you can put a character in.
+# You must make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':' except on otherwise blank lines.
+
+   |-----handy-ruler------------------------------------------------------|
+shc: shc (Shell script compiler)
+shc:
+shc: SHC is a generic shell script compiler. It takes a script, which is
+shc: specified on the command line and produces C source code.
+shc: The generated source code is then compiled and linked to produce
+shc: a stripped binary.
+shc:
+shc:
+shc:
+shc: Home Page: http://neurobin.github.io/shc
+shc:

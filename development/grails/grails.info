@@ -1,0 +1,12 @@
+PRGNAM="grails"
+VERSION="3.2.8"
+HOMEPAGE="http://www.grails.org/"
+DOWNLOAD="https://github.com/grails/grails-core/releases/download/v3.2.8/grails-3.2.8.zip \
+        https://github.com/grails/grails-doc/releases/download/v3.2.8/grails-docs-3.2.8.zip"
+MD5SUM="8286dad8b1307b7a11fe039161835112 \
+        ce1e6f6b582de8b64b62ff9d4d3225a9"
+DOWNLOAD_x86_64=""
+MD5SUM_x86_64=""
+REQUIRES="jdk"
+MAINTAINER="DhabyX"
+EMAIL="slack.dhabyx@gmail.com"

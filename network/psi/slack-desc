@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.
+# Line up the first '|' above the ':' following the base package name, and
+# the '|' on the right side marks the last column you can put a character in.
+# You must make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':' except on otherwise blank lines.
+
+   |-----handy-ruler------------------------------------------------------|
+psi: psi (Qt Jabber client)
+psi:
+psi: Psi is a free instant messaging application designed for the XMPP
+psi: network (including Google Talk). Fast and lightweight, Psi is fully
+psi: open-source and compatible with Windows, Linux, and Mac OS X.
+psi:
+psi: With Psi's full Unicode support and localizations, easy file
+psi: transfers, customizable iconsets, and many other great features,
+psi: you'll learn why users around the world are making the switch to free,
+psi: open instant messaging.
+psi:

@@ -1,0 +1,12 @@
+Qbs is a build automation tool designed to conveniently manage the build
+process of software projects across multiple platforms. Qbs can be used
+for any software project, regardless of programming language, toolkit or
+libraries used.
+
+NOTES:
+1. Remove any previous Qbs installations before building this package.
+
+2. Sometimes the old Qbs profiles do not work with updated version of
+   Qbs. These files are located in ~/.config/QtProject/qbs directory.
+   Deleting this directory and recreating the profiles is a possible
+   workaround.

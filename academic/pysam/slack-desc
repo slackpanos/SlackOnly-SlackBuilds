@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.
+# Line up the first '|' above the ':' following the base package name, and
+# the '|' on the right side marks the last column you can put a character in.
+# You must make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':' except on otherwise blank lines.
+
+     |-----handy-ruler------------------------------------------------------|
+pysam: pysam (read/write genomic data sets)
+pysam:
+pysam: Pysam is a python module for reading and manipulating files in the
+pysam: SAM, BAM, CRAM, VCF, and BCF format used for storing and writing
+pysam: genomic data sets. Pysam is a lightweight wrapper of the samtools
+pysam: and htslib C-API's and also includes an interface for tabix.
+pysam:
+pysam: Home: https://github.com/pysam-developers/pysam
+pysam: Howto: https://pysam.readthedocs.io/en/latest/
+pysam:
+pysam:

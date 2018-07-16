@@ -1,0 +1,12 @@
+diff -Nur pptpd-1.4.0.orig/pptpctrl.c pptpd-1.4.0/pptpctrl.c
+--- pptpd-1.4.0.orig/pptpctrl.c	2013-10-22 23:53:19.000000000 -0500
++++ pptpd-1.4.0/pptpctrl.c	2016-01-10 23:26:25.182409723 -0600
+@@ -786,7 +786,7 @@
+ 
+         if (pptp_logwtmp) {
+                  pppd_argv[an++] = "plugin";
+-                 pppd_argv[an++] = "/usr/lib/pptpd/pptpd-logwtmp.so";
++                 pppd_argv[an++] = "/usr/lib64/pptpd/pptpd-logwtmp.so";
+                  pppd_argv[an++] = "pptpd-original-ip";
+                  pppd_argv[an++] = inet_ntoa(inetaddrs[1]);
+         }

@@ -1,0 +1,6 @@
+guacamole-client contains all Java and JavaScript components
+of Guacamole (guacamole, guacamole-common, guacamole-ext,
+and guacamole-common-js).
+
+NOTE: This package use the pre-built binary from upstream to
+prevent download lots of packages during building from source.

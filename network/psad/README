@@ -1,0 +1,48 @@
+psad (Intrusion Detection and Log Analysis with iptables)
+
+psad is a collection of three lightweight system daemons (two main
+daemons and one helper daemon) that run on Linux machines and analyze
+iptables log messages to detect port scans and other suspicious traffic.
+A typical deployment is to run psad on the iptables firewall where it has
+the fastest access to log data.
+
+You can set email for alerts by setting ALERTSEMAIL:
+
+ALERTSEMAIL=alerts@example.com ./psad.SlackBuild
+
+You need at least these rules:
+
+iptables -A INPUT -j LOG
+iptables -A FORWARD -j LOG
+
+but more usefull will be something like this:
+
+iptables -A INPUT -i lo -j ACCEPT
+iptables -A INPUT -m conntrack --ctstate ESTABLISHED,RELATED -j ACCEPT
+iptables -A INPUT -p tcp --dport 22 -j ACCEPT
+iptables -A INPUT -p tcp --dport 80 -j ACCEPT
+iptables -A INPUT -j LOG
+iptables -A INPUT -j DROP
+
+please see documentation for more information.
+
+NOTE:
+psad requires several perl modules:
+perl-Bit-Vector
+perl-Date-Calc
+perl-IPTables-Parse
+perl-IPTables-ChainMgr
+perl-NetAddr-IP
+perl-Unix-Syslog
+
+these are included in sources, so you don't need to install them.
+But if you get some weird perl modules errors, you must uninstall
+previous psad version before bulding new one.
+Alternatively you can manually install this modules, all are available
+on SlackBuilds.
+
+NOTE:
+The default option is NOT to download signatures.
+We provide a signature file, but may be outdated as time goes by.
+You can download them manually from http://www.cipherdyne.org/psad/signatures
+and place them in /etc/psad

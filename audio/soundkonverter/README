@@ -1,0 +1,10 @@
+soundKonverter is a frontend to various audio converters.
+The key features are:
+- Audio conversion
+- Replay Gain calculation
+- CD ripping
+
+Optional Dependencies
+
+See the wiki for more information:
+https://github.com/dfaust/soundkonverter/wiki

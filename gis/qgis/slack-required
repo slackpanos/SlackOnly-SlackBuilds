@@ -1,0 +1,9 @@
+Jinja2
+OWSLib
+Pygments
+gdal
+libspatialindex
+numpy
+psycopg2
+pyspatialite
+qwtpolar

@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Tux Typing 2
+GenericName=Educational Typing Tutor
+Exec=tuxtype
+Terminal=false
+Type=Application
+Categories=Education;
+Icon=tuxtype2
+StartupNotify=false

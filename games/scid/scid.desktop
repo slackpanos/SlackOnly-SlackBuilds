@@ -1,0 +1,7 @@
+[Desktop Entry]
+Name=Scid 
+GenericName=A Free Chess Database App
+Exec=scid
+Icon=scid
+Type=Application
+Categories=Game;BoardGame;

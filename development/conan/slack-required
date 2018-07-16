@@ -1,0 +1,14 @@
+PyYAML
+boto
+bottle
+cfgparse
+colorama
+fasteners
+node-semver
+passlib
+pluginbase
+pyjwt
+python-distro
+python-patch
+python-requests
+six

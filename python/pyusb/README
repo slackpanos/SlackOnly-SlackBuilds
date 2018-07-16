@@ -1,0 +1,2 @@
+PyUSB is a native Python module which provides easy USB access to Python.
+The module contains classes and methods to support most USB operations.

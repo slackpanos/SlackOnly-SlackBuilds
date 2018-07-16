@@ -1,0 +1,5 @@
+As of the 0.16 version, gajim uses it's own non-blocking xmpp implementation
+called nbxmpp (python-nbxmpp on slackbuilds.org). This is required to build.
+
+For encryption PyOpenSSL is used, which is not required for building, but
+produces a warning message on connection if not installed.

@@ -1,0 +1,12 @@
+[Desktop Entry]
+Version=1.0
+Exec=tgif
+TryExec=tgif
+Icon=tgif
+Terminal=false
+Name=Tgif
+Comment=Drawing program
+Categories=Graphics;
+Type=Application
+MimeType=application/x-tgif;
+StartupNotify=false

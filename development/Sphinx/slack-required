@@ -1,0 +1,11 @@
+Jinja2
+Pygments
+alabaster
+babel
+docutils
+imagesize
+packaging
+python-requests
+snowballstemmer
+sphinxcontrib-websupport
+typing

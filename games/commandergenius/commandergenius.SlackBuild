@@ -1,0 +1,133 @@
+#!/bin/sh
+
+# Slackware build script for commandergenius
+
+# Written by B. Watson (yalhcru@gmail.com)
+
+# Licensed under the WTFPL. See http://www.wtfpl.net/txt/copying/ for details.
+
+# 20180709 bkw: updated for 2.2.2
+# - upstream moved the project from github to gitlab. one nice side-effect
+#   of this is that the GsKit stuff is now included in the release tarball,
+#   which simplifies this script quite a bit. the downside of that is that
+#   this script can no longer build older versions.
+# - SDL2 and python3 are now required.
+
+# 20180101 bkw: updated for 2.0.0
+# 20171222 bkw: updated for 1.9.9.8beta
+# 20170826 bkw: updated for 1.9.9.5beta
+# 20170725 bkw: updated for 1.9.9.2beta
+# 20170301 bkw:
+# - updated for 1.9.8.7beta
+# - fix the build for the case where SDL2 is installed but SDL2_image is not.
+# - update man page (level= option, correct author's full name)
+# - use github long-form URL
+# 20170122 bkw: updated for 1.9.8.1beta.
+
+PRGNAM=commandergenius
+VERSION=${VERSION:-2.2.2}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_SBo}
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i586 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+if [ "$ARCH" = "i586" ]; then
+  SLKCFLAGS="-O2 -march=i586 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+  LIBDIRSUFFIX="64"
+else
+  SLKCFLAGS="-O2"
+  LIBDIRSUFFIX=""
+fi
+
+set -e
+
+# I wish upstream would pick a name and stick with it... they also use
+# ~/.CommanderGenius for user data, and their README mentions CGenius.
+SRCNAM="Commander-Genius"
+EXENAME="CGeniusExe"
+DESKTOP="cgenius.desktop"
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $SRCNAM-v$VERSION
+# OSX and Windows stuff takes up 31MB in /tmp, no need to extract it.
+tar xvf $CWD/$SRCNAM-v$VERSION.tar.bz2 \
+        --wildcards --exclude='*/dlls' --exclude='*/Build/Xcode'
+cd $SRCNAM-v$VERSION
+chown -R root:root .
+
+# permissions are blethcherous, please don't revert to template here.
+find -L . -type f -a -exec chmod 644 '{}' '+'
+find -L . -type d -a -exec chmod 755 '{}' '+'
+
+# placate desktop-file-validate
+sed -i 's,Application;,,' share/$DESKTOP
+
+mkdir -p build
+cd build
+  cmake \
+    -DUSE_SDL2=yes \
+    -DGAMES_SHAREDIR:STRING=/usr/share/games \
+    -DCMAKE_C_FLAGS:STRING="$SLKCFLAGS" \
+    -DCMAKE_CXX_FLAGS:STRING="$SLKCFLAGS" \
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DLIB_SUFFIX=${LIBDIRSUFFIX} \
+    -DMAN_INSTALL_DIR=/usr/man \
+    -DCMAKE_BUILD_TYPE=Release ..
+  make VERBOSE=1
+  make install/strip DESTDIR=$PKG
+cd ..
+
+# upstream installs 2 identical-looking (but not byte-identical) icons
+rm -f $PKG/usr/share/icons/hicolor/512x512/apps/CGLogo.png
+ln -s ../../../../games/$PRGNAM/cglogo512.png \
+      $PKG/usr/share/icons/hicolor/512x512/apps/CGLogo.png
+
+# grrrr. don't force command-line users to remember the name is CGeniusExe
+ln -s $EXENAME $PKG/usr/games/$PRGNAM
+
+# the High Quality Pack. this is redundant for Keen 1 and 4 (just download
+# the Special versions of these games), so we only install the data for
+# 2 and 3. strace shows the files are being loaded, but TBH I haven't
+# played these games enough to notice the difference with/without the HQP.
+rm -rf hqp/games/keen1 hqp/games/keen4
+cp -a hqp/* $PKG/usr/share/games/$PRGNAM
+
+# man page written for this SlackBuild.
+mkdir -p $PKG/usr/man/man6
+gzip -9c < $CWD/$PRGNAM.6 > $PKG/usr/man/man6/$PRGNAM.6.gz
+ln -s $PRGNAM.6.gz $PKG/usr/man/man6/$EXENAME.6.gz
+
+# upstream installs most of the docs in /usr/share/games/$PRGNAM...
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+cp -a COPYRIGHT $PKG/usr/doc/$PRGNAM-$VERSION
+for i in README changelog.txt Readme_hqp.txt; do
+  ln -s ../../share/games/$PRGNAM/$i $PKG/usr/doc/$PRGNAM-$VERSION
+done
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+
+mkdir -p $PKG/install
+sed "s,@SDLVER@,$SDLVER," < $CWD/slack-desc > $PKG/install/slack-desc
+cat $CWD/slack-required > $PKG/install/slack-required
+cat $CWD/doinst.sh > $PKG/install/doinst.sh
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}

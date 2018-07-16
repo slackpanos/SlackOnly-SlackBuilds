@@ -1,0 +1,125 @@
+#!/bin/sh
+
+# Slackware build script for cicb
+
+# Written by B. Watson (yalhcru@gmail.com)
+
+# Licensed under the WTFPL. See http://www.wtfpl.net/txt/copying/ for details.
+
+# 20180623 bkw:
+# There's a new upstream, and development is happening
+# again, using 5.1.1b3 as a basis. Sourceforge project is gone, moved
+# to github. So here's the latest git...
+# - updated for 5.2.0b1+git20170501.
+# - re-add the missing man page source (icb.pod). hope it doesn't go
+#   AWOL again.
+# - edit the man page a bit, regenerate it.
+# - install system.icbrc and icbserverdb as config (.new) files,
+#   add doinst.sh to support this.
+# - add git2targz.sh script to generate source tarball from git.
+
+# Note to self, or anyone else wanting to update this: use the
+# git2targz.sh script, it should be smart enough to pull the latest
+# code and create a tarball with the correct VERSION.
+
+PRGNAM=cicb
+VERSION=${VERSION:-5.2.0b1+git20170501}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_SBo}
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i586 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+if [ "$ARCH" = "i586" ]; then
+  SLKCFLAGS="-O2 -march=i586 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+  LIBDIRSUFFIX="64"
+else
+  SLKCFLAGS="-O2"
+  LIBDIRSUFFIX=""
+fi
+
+set -e
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf $PRGNAM-$VERSION
+tar xvf $CWD/$PRGNAM-$VERSION.tar.xz
+cd $PRGNAM-$VERSION
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \+ -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+ -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \+
+
+# Need this for recent tcl, to allow deprecated features. Someday this will
+# probably stop working and upstream will have to fix it.
+SLKCFLAGS="$SLKCFLAGS -DUSE_INTERP_ERRORLINE -DUSE_INTERP_RESULT"
+
+# library autodetection is broken on 64-bit, hence the
+# --with-(readline|ssl)* and the LDFLAGS below. They don't do any harm
+# on 32-bit.
+
+# 20151117 bkw: -current needs CPPFLAGS=-P, and it does no harm on 14.1.
+
+CPPFLAGS="-P" \
+LDFLAGS="-L/usr/lib$LIBDIRSUFFIX" \
+CFLAGS="$SLKCFLAGS" \
+CXXFLAGS="$SLKCFLAGS" \
+./configure \
+  --with-ssl \
+  --with-ssl-lib=/usr/lib$LIBDIRSUFFIX \
+  --with-readlinelib=/usr/lib$LIBDIRSUFFIX \
+  --datarootdir=/usr/share/$PRGNAM \
+  --prefix=/usr \
+  --libdir=/usr/lib${LIBDIRSUFFIX} \
+  --sysconfdir=/etc \
+  --localstatedir=/var \
+  --mandir=/usr/man \
+  --docdir=/usr/doc/$PRGNAM-$VERSION \
+  --build=$ARCH-slackware-linux
+
+make
+
+# no DESTDIR support, and prefix= is broken. Manual install.
+# icbserverdb is newer than what's in the cicb tarball, it came from:
+# wget -O icbserverdb ftp://ftp.icb.net/pub/icb/servers
+
+mkdir -p $PKG/usr/bin $PKG/usr/share/$PRGNAM
+ln -s icb $PKG/usr/bin/$PRGNAM
+install -s -m0755 icb/icb $PKG/usr/bin
+cat $CWD/icbserverdb > $PKG/usr/share/$PRGNAM/icbserverdb.new
+cat system.icbrc > $PKG/usr/share/$PRGNAM/system.icbrc.new
+
+# man page written for this SlackBuild
+mkdir -p $PKG/usr/man/man1
+gzip -9c < $CWD/icb.1 > $PKG/usr/man/man1/icb.1.gz
+ln -s icb.1.gz $PKG/usr/man/man1/$PRGNAM.1.gz
+
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+cp -a C* README TODO TRIGGERS contrib $PKG/usr/doc/$PRGNAM-$VERSION
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+cat $CWD/doinst.sh > $PKG/install/doinst.sh
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}

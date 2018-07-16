@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Angband
+Comment=Dive into Angband and defeat Morgoth
+Exec=angband
+Terminal=true
+Type=Application
+Categories=Game;
+Icon=angband

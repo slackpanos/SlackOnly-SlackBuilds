@@ -1,0 +1,13 @@
+BeautifulSoup4
+colorama
+docopt
+futures
+isodate
+lxml
+mutagen
+nltk
+nose
+numpy
+python-requests
+six
+termcolor

@@ -1,0 +1,13 @@
+libwww-perl
+perl-Crypt-OpenSSL-Bignum
+perl-Encode-Detect
+perl-IO-Socket-INET6
+perl-IO-Socket-SSL
+perl-IP-Country
+perl-Image-Info
+perl-Mail-DKIM
+perl-Mail-SPF
+perl-Net-Ident
+perl-Net-Server
+pyzor
+re2c

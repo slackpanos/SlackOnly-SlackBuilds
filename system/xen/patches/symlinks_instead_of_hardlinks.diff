@@ -1,0 +1,29 @@
+--- xen-4.6.1/tools/xenstore/Makefile.orig	2016-02-09 15:44:19.000000000 +0100
++++ xen-4.6.1/tools/xenstore/Makefile	2016-02-20 22:54:11.877906517 +0100
+@@ -84,7 +84,7 @@
+ 	$(AR) cr $@ $^
+ 
+ $(CLIENTS): xenstore
+-	ln -f xenstore $@
++	ln -sf xenstore $@
+ 
+ xenstore: xenstore_client.o $(LIBXENSTORE)
+ 	$(CC) $< $(LDFLAGS) $(LDLIBS_libxenstore) $(SOCKET_LIBS) -o $@ $(APPEND_LDFLAGS)
+@@ -140,7 +140,7 @@
+ 	$(INSTALL_PROG) xenstore-control $(DESTDIR)$(bindir)
+ 	$(INSTALL_PROG) xenstore $(DESTDIR)$(bindir)
+ 	set -e ; for c in $(CLIENTS) ; do \
+-		ln -f $(DESTDIR)$(bindir)/xenstore $(DESTDIR)$(bindir)/$${c} ; \
++		ln -sf xenstore $(DESTDIR)$(bindir)/$${c} ; \
+ 	done
+ 	$(INSTALL_DIR) $(DESTDIR)$(libdir)
+ 	$(INSTALL_SHLIB) libxenstore.so.$(MAJOR).$(MINOR) $(DESTDIR)$(libdir)
+@@ -159,7 +159,7 @@
+ 	$(INSTALL_DIR) $(DESTDIR)$(bindir)
+ 	$(INSTALL_PROG) xenstore $(DESTDIR)$(bindir)
+ 	set -e ; for c in $(CLIENTS) ; do \
+-		ln -f $(DESTDIR)$(bindir)/xenstore $(DESTDIR)$(bindir)/$${c} ; \
++		ln -sf xenstore $(DESTDIR)$(bindir)/$${c} ; \
+ 	done
+ 
+ -include $(DEPS)

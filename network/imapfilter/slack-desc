@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.
+# Line up the first '|' above the ':' following the base package name, and
+# the '|' on the right side marks the last column you can put a character in.
+# You must make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':' except on otherwise blank lines.
+
+          |-----handy-ruler------------------------------------------------------|
+imapfilter: imapfilter (a mail filtering utility)
+imapfilter:
+imapfilter: IMAPFilter is a mail filtering utility. It connects to remote mail
+imapfilter: servers using the Internet Message Access Protocol (IMAP), sends
+imapfilter: searching queries to the server and processes mailboxes based on the
+imapfilter: results. It can be used to delete, copy, move, flag, etc. messages
+imapfilter: residing in mailboxes at the same or different mail servers. The
+imapfilter: 4rev1 and 4 versions of the IMAP protocol are supported.
+imapfilter:
+imapfilter: IMAPFilter uses the Lua programming language as a configuration and
+imapfilter: extension language. <https://github.com/lefcha/imapfilter>

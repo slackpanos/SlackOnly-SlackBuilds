@@ -1,0 +1,7 @@
+gst-plugins-bad
+gst-python3
+gstreamer-editing-services
+pygobject3-python3
+python3-dateutil
+python3-matplotlib
+python3-six

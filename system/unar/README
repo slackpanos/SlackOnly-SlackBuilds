@@ -1,0 +1,6 @@
+This package contains two command-line utilities, unar and lsar, which
+can be used to unpack and list archives, respectively.
+
+Supported file formats include Zip, Tar-GZip, Tar-BZip2, RAR, 7-zip,
+LhA, StuffIt and many other old and obscure formats.  See
+https://theunarchiver.com for a more complete list of supported formats.

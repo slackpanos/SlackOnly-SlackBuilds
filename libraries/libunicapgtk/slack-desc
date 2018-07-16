@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.
+# Line up the first '|' above the ':' following the base package name, and
+# the '|' on the right side marks the last column you can put a character in.
+# You must make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':' except on otherwise blank lines.
+
+            |-----handy-ruler------------------------------------------------------|
+libunicapgtk: libunicapgtk (GTK widget set for unicap)
+libunicapgtk:
+libunicapgtk: Unicap provides a uniform interface to video capture devices. It
+libunicapgtk: allows applications to use any supported video capture device via a
+libunicapgtk: single API. Building applications with a graphical user interface is
+libunicapgtk: made especially easy with the unicapgtk widget set.
+libunicapgtk:
+libunicapgtk: Homepage: https://github.com/unicap
+libunicapgtk:
+libunicapgtk:
+libunicapgtk:

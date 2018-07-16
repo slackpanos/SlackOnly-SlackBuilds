@@ -1,0 +1,1 @@
+faba-icon-theme

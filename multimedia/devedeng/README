@@ -1,0 +1,16 @@
+DevedeNG is a program to create video DVDs and CDs (VCD, sVCD, or CVD)
+suitable for home players from any number of video files, in any of
+the formats supported by MPlayer.
+
+The suffix NG is because it is a rewrite from scratch of the old Devede,
+to work with Python3 and Gtk3, and with a new internal architecture that
+allows to expand it and easily add new features.
+
+DevedeNG has optional dependencies for some of its features:
+  brasero, mpv, vlc, xfburn
+
+NOTE: To get around the k3b, brasero or xfburn requirement for burning
+DVDs use growisofs. Here is an example, make sure to adjust the path to
+your DVD drive accordingly.
+
+  growisofs -dvd-compat -Z /dev/sr1=movie.iso

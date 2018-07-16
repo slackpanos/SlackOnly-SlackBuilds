@@ -1,0 +1,8 @@
+Ted is a lightweight Word-processor that uses the RTF-format. It supports 
+multiple fonts and can print to PostScript printers. Ted is simple to use, 
+is easily compiled.
+
+Additional packages with spellcheckers for different languages exist and 
+can be downloaded from the Ted homepage.
+
+Note: This application doesn't work with Windowmaker

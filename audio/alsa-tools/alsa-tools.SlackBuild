@@ -1,0 +1,217 @@
+#!/bin/sh
+
+# Slackware build script for alsa-tools
+
+# Written by B. Watson (yalhcru@gmail.com)
+
+# Licensed under the WTFPL. See http://www.wtfpl.net/txt/copying/ for details.
+
+# I am *not* going to create separate packages for each of the individual
+# tools, as some distros do. They're small enough that it's worth the
+# tiny bit of extra disk space for unused tools, to avoid the annoyances
+# of having to write and test 10 or 12 packages. For the same reason,
+# the firmware is being included in the package as well.
+# *** I agree.  --rworkman   :-)
+
+# 20180614 bkw: update for 1.1.6
+# 20171214 bkw: update for 1.1.5
+
+# 20170313 bkw:
+# - flip this changelog right-side-up :)
+# - stop spamming /root/.qt/
+# - not bumping BUILD, it's a trivial change
+
+# 20170126 bkw: update for 1.1.3
+# 20160109 rlw: update for 1.1.0
+# 20150505 bkw: update for 1.0.29
+
+# 20140823 bkw:
+# - Add usbcore.autosuspend=-1 to tascam howto
+# - Update for 1.0.28
+
+# 20140219 bkw: fix .desktop files so they validate
+
+PRGNAM=alsa-tools
+VERSION=${VERSION:-1.1.6}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_SBo}
+
+FIRMVER=${FIRMVER:-1.0.29}
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i586 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+if [ "$ARCH" = "i586" ]; then
+  SLKCFLAGS="-O2 -march=i586 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+  LIBDIRSUFFIX="64"
+else
+  SLKCFLAGS="-O2"
+  LIBDIRSUFFIX=""
+fi
+
+set -e
+
+FIRMWARE=alsa-firmware
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+
+# first, alsa-tools itself... which is really a bunch of separate packages
+# that happen to be tarred up together.
+cd $TMP
+rm -rf $PRGNAM-$VERSION
+tar xvf $CWD/$PRGNAM-$VERSION.tar.bz2
+cd $PRGNAM-$VERSION
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 -o -perm 511 \) \
+ -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
+ -exec chmod 644 {} \;
+
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+
+# allow disabling all the GUI apps
+if [ "${GUI:-yes}" != "yes" ]; then
+  QT3=no
+  FLTK=no
+  rm -rf echomixer envy24control hdajackretask rmedigicontrol
+fi
+
+# qlo10k1 depends on Qt3, which no longer ships with Slackware.
+# This supports the SBo qt3 build. It's not enough to source qt.sh,
+# the qt3 bin directories need to come first in $PATH too.
+# If you got your Qt3 from some other source, you may have to
+# fiddle with QTDIR and PATH yourself. The uic wrapper is to
+# prevent uic from writing in /root/.qt, and the ccache stuff
+# has no effect if ccache isn't in use.
+if [ -e /opt/kde3/lib$LIBDIRSUFFIX/qt3 -a "${QT3:-yes}" = "yes" ]; then
+  source /etc/profile.d/qt.sh
+  export PATH=/opt/kde3/lib$LIBDIRSUFFIX/qt3/bin:/opt/kde3/bin:$PATH
+  export UIC=$( pwd )/uic
+  cat <<EOF > uic
+#!/bin/sh
+echo "=== running uic wrapper"
+export CCACHE_DIR=${CCACHE_DIR:-$HOME/.ccache}
+export HOME=$( pwd )
+exec /opt/kde3/bin/uic "\$@"
+EOF
+  chmod +x uic
+else
+  rm -rf qlo10k1
+fi
+
+# hdspconf and hdspmixer depend on fltk. Don't build them if disabled or
+# not installed.
+[ -e /usr/bin/fltk-config -a "${FLTK:-yes}" = "yes" ] || rm -rf hdspconf hdspmixer
+
+# one loop to build them all. The -include stddef.h fixes qlo10k1 'ptrdiff_t doesn't
+# name a type' errors, and doesn't hurt anything else.
+for subdir in $( find . -name configure | sed -e 's,^\./,,' -e 's,/configure,,' ); do
+  cd $subdir
+
+  LDFLAGS="-L/usr/lib$LIBDIRSUFFIX" \
+  CFLAGS="$SLKCFLAGS" \
+  CXXFLAGS="$SLKCFLAGS -include stddef.h" \
+  ./configure \
+    --prefix=/usr \
+    --libdir=/usr/lib${LIBDIRSUFFIX} \
+    --sysconfdir=/etc \
+    --localstatedir=/var \
+    --mandir=/usr/man \
+    --docdir=/usr/doc/$PRGNAM-$VERSION \
+    --build=$ARCH-slackware-linux
+
+  make
+  make install-strip DESTDIR=$PKG
+
+  for doc in README AUTHORS COPYING ChangeLog NEWS TODO COPYING.LIB; do
+    [ -s "$doc" ] && cat "$doc" > $PKG/usr/doc/$PRGNAM-$VERSION/$doc.$( basename $subdir ).txt
+  done
+  cd -
+done
+
+# second, build the firmware
+rm -rf $FIRMWARE-$FIRMVER
+tar xvf $CWD/$FIRMWARE-$FIRMVER.tar.bz2
+cd $FIRMWARE-$FIRMVER
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 -o -perm 511 \) \
+ -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 600 -o -perm 444 -o -perm 440 -o -perm 400 \) \
+ -exec chmod 644 {} \;
+
+CFLAGS="$SLKCFLAGS" \
+CXXFLAGS="$SLKCFLAGS" \
+./configure \
+ --prefix=/usr \
+ --libdir=/usr/lib${LIBDIRSUFFIX} \
+ --sysconfdir=/etc \
+ --localstatedir=/var \
+ --mandir=/usr/man \
+ --docdir=/usr/doc/$PRGNAM-$VERSION \
+ --with-hotplug-dir=/lib/firmware \
+ --build=$ARCH-slackware-linux
+
+make
+make install-strip DESTDIR=$PKG
+
+# hdspmixer.desktop and hdspconf.desktop fail desktop-file-validate.
+# We'll leave the deprecation warning for FilePattern, as it's just a
+# warning, and FilePattern might still be useful.
+[ -e $PKG/usr/share/applications/hdspmixer.desktop ] &&
+sed -i \
+  -e '/^Encoding/d' \
+  -e '/^FilePattern/s,$,;,' \
+  -e '/^Icon/s,\.png *$,,' \
+  -e '/^Categories/s,Application;,,' \
+  $PKG/usr/share/applications/hdspmixer.desktop \
+  $PKG/usr/share/applications/hdspconf.desktop
+
+# Niels Horn pointed out that some of the firmware shipped with this
+# package conflicts with Slackware's kernel-firmware package. The files
+# are identical, so just leave them out of this build.
+( cd $PKG/lib/firmware ; rm -rf ess korg sb16 yamaha )
+
+# remove the hotplug scripts, since Slackware 13.37 & up doesn't use hotplug.
+# Instead, they've been converted to udev rules.
+rm -rf $PKG/etc/hotplug
+
+mkdir -p $PKG/lib/udev/rules.d
+cat $CWD/99-tascam.rules > $PKG/lib/udev/rules.d/99-tascam.rules
+
+cat COPYING > $PKG/usr/doc/$PRGNAM-$VERSION/COPYING.firmware.txt
+cat README > $PKG/usr/doc/$PRGNAM-$VERSION/README.firmware.txt
+
+# I wrote this doc when I got my US-122, might as well include it in
+# case it helps anyone.
+cat $CWD/tascam-us122-HOWTO > $PKG/usr/doc/$PRGNAM-$VERSION/tascam-us122-HOWTO
+
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+
+find $PKG/usr/man -type f -exec gzip -9 {} \;
+for i in $( find $PKG/usr/man -type l ) ; do ln -s $( readlink $i ).gz $i.gz ; rm $i ; done
+
+mkdir -p $PKG/install
+cat $CWD/slack-desc > $PKG/install/slack-desc
+cat $CWD/doinst.sh > $PKG/install/doinst.sh
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}

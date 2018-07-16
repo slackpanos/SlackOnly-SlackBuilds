@@ -1,0 +1,7 @@
+ghc
+haskell-exceptions
+haskell-mtl
+haskell-multipart
+haskell-network
+haskell-network-uri
+haskell-parsec

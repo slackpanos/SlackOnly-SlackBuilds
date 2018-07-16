@@ -1,0 +1,27 @@
+diff -Naur razor-qt-0.5.2.orig/razorqt-config/src/CMakeLists.txt razor-qt-0.5.2/razorqt-config/src/CMakeLists.txt
+--- razor-qt-0.5.2.orig/razorqt-config/src/CMakeLists.txt	2013-01-12 17:40:48.000000000 +0100
++++ razor-qt-0.5.2/razorqt-config/src/CMakeLists.txt	2013-01-14 07:03:35.907315151 +0100
+@@ -52,4 +52,4 @@
+ 
+ INSTALL(TARGETS razor-config RUNTIME DESTINATION bin)
+ install(FILES ${DESKTOP_FILES} DESTINATION ${CMAKE_INSTALL_PREFIX}/share/applications)
+-install(FILES razor-config.menu DESTINATION /etc/xdg/menus/)
++install(FILES razor-config.menu DESTINATION ${RAZOR_ETC_XDG_DIRECTORY}/menus/)
+diff -Naur razor-qt-0.5.2.orig/razorqt-resources/application-menu/CMakeLists.txt razor-qt-0.5.2/razorqt-resources/application-menu/CMakeLists.txt
+--- razor-qt-0.5.2.orig/razorqt-resources/application-menu/CMakeLists.txt	2013-01-12 17:40:48.000000000 +0100
++++ razor-qt-0.5.2/razorqt-resources/application-menu/CMakeLists.txt	2013-01-14 07:04:24.877315008 +0100
+@@ -28,4 +28,4 @@
+ 
+ add_subdirectory(desktop-directories)
+ 
+-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/razor-applications.menu DESTINATION /etc/xdg/menus/)
++install(FILES ${CMAKE_CURRENT_BINARY_DIR}/razor-applications.menu DESTINATION ${RAZOR_ETC_XDG_DIRECTORY}/menus/)
+diff -Naur razor-qt-0.5.2.orig/razorqt-resources/autostart/CMakeLists.txt razor-qt-0.5.2/razorqt-resources/autostart/CMakeLists.txt
+--- razor-qt-0.5.2.orig/razorqt-resources/autostart/CMakeLists.txt	2013-01-12 17:40:48.000000000 +0100
++++ razor-qt-0.5.2/razorqt-resources/autostart/CMakeLists.txt	2013-01-14 07:03:35.908315132 +0100
+@@ -11,4 +11,4 @@
+ add_custom_target(autostart_desktop_files ALL DEPENDS ${DESKTOP_FILES})
+ #************************************************
+ 
+-install(FILES ${DESKTOP_FILES} DESTINATION /etc/xdg/autostart)
++install(FILES ${DESKTOP_FILES} DESTINATION ${RAZOR_ETC_XDG_DIRECTORY}/autostart)

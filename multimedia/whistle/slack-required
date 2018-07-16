@@ -1,0 +1,10 @@
+libwww-perl
+perl-Audio-FLAC-Header
+perl-Curses-UI
+perl-IPC-Run
+perl-IPC-System-Simple
+perl-MP3-Info
+perl-Ogg-Vorbis-Header-PurePerl
+perl-extutils-depends
+perl-extutils-pkgconfig
+perl-file-mimeinfo

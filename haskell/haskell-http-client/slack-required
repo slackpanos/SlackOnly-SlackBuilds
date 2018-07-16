@@ -1,0 +1,13 @@
+haskell-base64-bytestring
+haskell-blaze-builder
+haskell-case-insensitive
+haskell-cookie
+haskell-data-default-class
+haskell-http-types
+haskell-mime-types
+haskell-network
+haskell-network-uri
+haskell-publicsuffixlist
+haskell-random
+haskell-streaming-commons
+haskell-text

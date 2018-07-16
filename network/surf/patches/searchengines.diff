@@ -1,0 +1,72 @@
+diff -Naur surf-2.0/config.def.h surf-2.0.patched/config.def.h
+--- surf-2.0/config.def.h	2017-03-28 12:17:45.000000000 -0400
++++ surf-2.0.patched/config.def.h	2017-06-25 02:20:53.529174137 -0400
+@@ -153,6 +153,13 @@
+ 	{ MODKEY|GDK_SHIFT_MASK, GDK_KEY_m,      toggle,     { .i = Style } },
+ };
+ 
++static SearchEngine searchengines[] = {
++  { "d",        "https://duckduckgo.com/html/?q=%s"   },
++  { "g",        "https://www.google.com/search?q=%s"   },
++  { "dict",     "http://www.thefreedictionary.com/%s" },
++  { "sb",       "http://slackbuilds.org/result/?search=%s&sv=@SLACKVER@" },
++};
++
+ /* button definitions */
+ /* target can be OnDoc, OnLink, OnImg, OnMedia, OnEdit, OnBar, OnSel, OnAny */
+ static Button buttons[] = {
+diff -Naur surf-2.0/surf.c surf-2.0.patched/surf.c
+--- surf-2.0/surf.c	2017-03-28 12:17:45.000000000 -0400
++++ surf-2.0.patched/surf.c	2017-06-25 02:04:32.517172473 -0400
+@@ -129,6 +129,11 @@
+ } Button;
+ 
+ typedef struct {
++	char *token;
++	char *uri;
++} SearchEngine;
++
++typedef struct {
+ 	const char *uri;
+ 	Parameter config[ParameterLast];
+ 	regex_t re;
+@@ -202,6 +207,7 @@
+ static void download(Client *c, WebKitURIResponse *r);
+ static void closeview(WebKitWebView *v, Client *c);
+ static void destroywin(GtkWidget* w, Client *c);
++static gchar *parseuri(const gchar *uri);
+ 
+ /* Hotkeys */
+ static void pasteuri(GtkClipboard *clipboard, const char *text, gpointer d);
+@@ -477,7 +483,7 @@
+ 		url = g_strdup_printf("file://%s", path);
+ 		free(path);
+ 	} else {
+-		url = g_strdup_printf("http://%s", uri);
++		url = parseuri(uri);
+ 	}
+ 
+ 	setatom(c, AtomUri, url);
+@@ -1461,6 +1467,22 @@
+ 		gtk_main_quit();
+ }
+ 
++gchar *
++parseuri(const gchar *uri) {
++	guint i;
++
++	for (i = 0; i < LENGTH(searchengines); i++) {
++		if (searchengines[i].token == NULL || searchengines[i].uri == NULL ||
++		    *(uri + strlen(searchengines[i].token)) != ' ')
++			continue;
++		if (g_str_has_prefix(uri, searchengines[i].token))
++			return g_strdup_printf(searchengines[i].uri,
++					       uri + strlen(searchengines[i].token) + 1);
++	}
++
++	return g_strdup_printf("http://%s", uri);
++}
++
+ void
+ pasteuri(GtkClipboard *clipboard, const char *text, gpointer d)
+ {

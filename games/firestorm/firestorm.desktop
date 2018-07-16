@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Firestorm Viewer
+GenericName=Second Life Client
+Icon=firestorm
+Exec=firestorm
+Terminal=false
+StartupNotify=false
+Categories=Game;ActionGame;

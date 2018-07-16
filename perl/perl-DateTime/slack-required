@@ -1,0 +1,6 @@
+perl-DateTime-Locale
+perl-DateTime-TimeZone
+perl-Math-Round
+perl-Module-Build
+perl-Test-Exception
+perl-Test-Warnings

@@ -1,0 +1,9 @@
+[Desktop Entry]
+Type=Application
+Exec=knime
+Name=KNIME
+GenericName=Data Mining Tool
+Comment=KNIME Desktop
+Icon=knime
+StartupNotify=true
+Categories=Qt;KDE;Development;

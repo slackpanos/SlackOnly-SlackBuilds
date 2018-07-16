@@ -1,0 +1,4 @@
+perl-Authen-SASL
+perl-IO-Socket-INET6
+perl-IO-Socket-SSL
+perl-net-dns

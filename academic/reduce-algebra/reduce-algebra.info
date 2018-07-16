@@ -1,0 +1,12 @@
+PRGNAM="reduce-algebra"
+VERSION="20180406svn4567"
+HOMEPAGE="http://reduce-algebra.sourceforge.net"
+DOWNLOAD="http://downloads.sourceforge.net/reduce-algebra/snapshot_2018-04-06/Reduce-svn4567-src.tar.gz \
+          http://downloads.sourceforge.net/reduce-algebra/snapshot_2018-04-06/linux64/reduce-common_4567_all.tgz"
+MD5SUM="0893a2dc002afef62e812892d0d8fc01 \
+        92afa1ec0d8f74f73e3e40efcfd82244"
+DOWNLOAD_x86_64=""
+MD5SUM_x86_64=""
+REQUIRES=""
+MAINTAINER="Alexander Verbovetsky"
+EMAIL="alik@ejik.org"

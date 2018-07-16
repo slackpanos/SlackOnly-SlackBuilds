@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.
+# Line up the first '|' above the ':' following the base package name, and
+# the '|' on the right side marks the last column you can put a character in.
+# You must make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':' except on otherwise blank lines.
+
+       |-----handy-ruler------------------------------------------------------|
+liferea: liferea (Web feed reader/news aggregator)
+liferea:
+liferea: Liferea is a web feed reader/news aggregator that brings together
+liferea: all of the content from your favorite subscriptions into a simple
+liferea: interface that makes it easy to organize and browse feeds. Its GUI
+liferea: is similar to a desktop mail/newsclient, with an embedded graphical
+liferea: browser.
+liferea:
+liferea: Homepage: https://lzone.de/liferea/
+liferea:
+liferea:

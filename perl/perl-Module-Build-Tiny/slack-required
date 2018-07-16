@@ -1,0 +1,5 @@
+perl-ExtUtils-Config
+perl-ExtUtils-Helpers
+perl-ExtUtils-InstallPaths
+perl-JSON
+perl-Test-Harness

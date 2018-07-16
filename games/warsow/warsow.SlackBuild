@@ -1,0 +1,128 @@
+#!/bin/sh
+
+# Slackware build script for Warsow
+
+# Redistribution and use of this script, with or without modification, is
+# permitted provided that the following conditions are met:
+#
+# 1. Redistributions of this script must retain the above copyright
+#    notice, this list of conditions and the following disclaimer.
+#
+# THIS SOFTWARE IS PROVIDED BY THE AUTHOR ''AS IS'' AND ANY EXPRESS OR IMPLIED
+# WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+# MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
+# EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
+# PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
+# OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
+# OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+# ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+# Written by Andre Barboza <bmg.andre@gmail.com>
+# Updated by drhouse <housegregory299@gmail.com>
+# Updated by goarilla <goarilla@gmail.com>
+
+PRGNAM=warsow
+VERSION=${VERSION:-2.1}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_SBo}
+
+case "$( uname -m )" in
+    i?86) ARCH=i686 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+esac
+
+TMP=${TMP:-/tmp/SBo}
+CWD=$(pwd)
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+if [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+  LIBDIRSUFFIX="64"
+else
+  SLKCFLAGS="-O2"
+  LIBDIRSUFFIX=""
+fi
+
+set -eu
+
+rm -rf "$PKG"
+mkdir -p "${TMP}/${PRGNAM}-${VERSION}" "$PKG"
+mkdir -p "${PKG}/install"
+mkdir -p "${PKG}/usr/games"
+mkdir -p "${PKG}/usr/share/${PRGNAM}"
+mkdir -p "${PKG}/usr/doc/${PRGNAM}-${VERSION}"
+
+# no parent directory
+SDK="warsow_21_sdk.tar.gz"
+# ./warsow_20
+DATA="warsow_21_unified.tar.gz"
+
+tar -C "${PKG}/usr/doc/${PRGNAM}-${VERSION}" -xvf "$DATA" ./warsow_21/docs/
+mv "${PKG}/usr/doc/${PRGNAM}-${VERSION}/warsow_21/docs/"* "${PKG}/usr/doc/${PRGNAM}-${VERSION}/"
+rm -rf "${PKG}/usr/doc/${PRGNAM}-${VERSION}/warsow_21/"
+tar -C "${PKG}/usr/share/${PRGNAM}" -xvf "$DATA" ./warsow_21/basewsw
+mv "${PKG}/usr/share/${PRGNAM}/warsow_21/"* "${PKG}/usr/share/${PRGNAM}"
+rm -rf "${PKG}/usr/share/${PRGNAM}/warsow_21/"
+
+# unpack sdk
+tar -C "${TMP}/${PRGNAM}-${VERSION}" -xvf "$SDK" warsow_21_sdk/
+
+# build
+cd "${TMP}/${PRGNAM}-${VERSION}"
+cd warsow_21_sdk/source/source
+cmake -DQFUSION_GAME="Warsow" .
+make
+
+# copy build
+cp -rf build/wsw* build/warsow* build/libs "${PKG}/usr/share/${PRGNAM}/"
+
+# shuffle some files
+cd "$PKG"
+cd "usr/share/${PRGNAM}"
+cp "${CWD}/${PRGNAM}.SlackBuild" "${PKG}/usr/doc/${PRGNAM}-${VERSION}"
+
+# fix permissions of executables
+cd "$PKG"
+chmod 755 "usr/share/${PRGNAM}/warsow.${ARCH}"
+chmod 755 "usr/share/${PRGNAM}/wswtv_server.${ARCH}"
+chmod 755 "usr/share/${PRGNAM}/wsw_server.${ARCH}"
+
+# make wrappers
+cat >> usr/games/warsow << EOF
+#! /bin/sh
+ARCH="$ARCH"
+EOF
+cat >> usr/games/warsow << "EOF"
+cd /usr/share/warsow/ && exec ./"$(basename "$0").${ARCH}"
+EOF
+
+cp usr/games/warsow usr/games/wswtv_server
+cp usr/games/warsow usr/games/wsw_server
+
+# copy icons
+mkdir -p "${PKG}/usr/share/pixmaps/"
+cat "${CWD}/warsow.png" > "${PKG}/usr/share/pixmaps/warsow.png"
+mkdir -p "${PKG}/usr/share/applications"
+cat "${CWD}/warsow.desktop" > "${PKG}/usr/share/applications/warsow.desktop"
+
+# copy description
+cat $CWD/slack-desc > $PKG/install/slack-desc
+cat $CWD/slack-required > $PKG/install/slack-required
+cat $CWD/doinst.sh > $PKG/install/doinst.sh
+
+# set permissions
+chown -R root:root .
+chmod 755 usr/games/{warsow,wswtv_server,wsw_server}
+find usr/doc/"${PRGNAM}-${VERSION}" -type f -print0 | xargs -0 chmod 644
+find usr/share/"${PRGNAM}"/basewsw -type f -print0 | xargs -0 chmod 644
+find usr/share/"${PRGNAM}"/basewsw -type d -print0 | xargs -0 chmod 755
+
+# build package
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}

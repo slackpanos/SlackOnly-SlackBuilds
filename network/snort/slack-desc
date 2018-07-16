@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.
+# Line up the first '|' above the ':' following the base package name, and
+# the '|' on the right side marks the last column you can put a character in.
+# You must make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':' except on otherwise blank lines.
+
+     |-----handy-ruler------------------------------------------------------|
+snort: snort (Intrusion Detection and Prevention System)
+snort:
+snort: Snort is an open source network intrusion detection and prevention
+snort: system.
+snort:
+snort: Snort is capable of performing real-time traffic analysis, alerting,
+snort: blocking, session sniping, logging, and dropping sessions and packets.
+snort: It uses a combination of protocol analysis and pattern matching to
+snort: detect anomalies, misuse and attacks.
+snort:
+snort:

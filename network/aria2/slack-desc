@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.
+# Line up the first '|' above the ':' following the base package name, and
+# the '|' on the right side marks the last column you can put a character in.
+# You must make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':' except on otherwise blank lines.
+
+     |-----handy-ruler------------------------------------------------------|
+aria2: aria2 (CLI Metalink/BiTorrent client)
+aria2:
+aria2: aria2 is a lightweight multi-protocol & multi-source, cross platform
+aria2: download utility operated in command-line.
+aria2: It supports HTTP/HTTPS, FTP, SFTP, BitTorrent and Metalink.
+aria2:
+aria2:
+aria2: Homepage: https://aria2.github.io/
+aria2:
+aria2:
+aria2:

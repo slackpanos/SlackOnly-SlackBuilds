@@ -1,0 +1,6 @@
+ConfigParser
+astroid
+functools-lru-cache
+isort
+python-mccabe
+singledispatch

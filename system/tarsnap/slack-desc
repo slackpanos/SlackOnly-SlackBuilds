@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.
+# Line up the first '|' above the ':' following the base package name, and
+# the '|' on the right side marks the last column you can put a character in.
+# You must make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':' except on otherwise blank lines.
+
+       |-----handy-ruler------------------------------------------------------|
+tarsnap: tarsnap (Client software for Tarsnap)
+tarsnap:
+tarsnap: Tarsnap is a secure cloud-based backup service featuring client-side
+tarsnap: encryption and de-duplication created by Colin Percival.
+tarsnap:
+tarsnap: https://www.tarsnap.com
+tarsnap:
+tarsnap:
+tarsnap:
+tarsnap:
+tarsnap:

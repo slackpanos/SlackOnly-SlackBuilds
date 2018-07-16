@@ -1,0 +1,68 @@
+#!/bin/sh
+#
+# /etc/rc.d/rc.mongodb
+#
+# Start/stop/restart the mongodb server.
+#
+#
+
+PID=/var/state/mongodb.pid
+LOG=/var/log/mongodb
+DBPATH=/var/lib/mongodb
+USER=mongo
+GROUP=mongo
+SHELL=${SHELL:-/bin/bash}
+
+mongo_start() {
+	touch $LOG
+	chown $GROUP.$USER $LOG
+	touch $PID
+	chown $GROUP.$USER $PID
+
+	su -l $USER -s $SHELL -c "/usr/bin/mongod \
+		--dbpath=$DBPATH \
+		--fork \
+		--pidfilepath=$PID \
+		--logappend \
+		--logpath=$LOG \
+		--nohttpinterface \
+	" && {
+		echo "MongoDB server started successfully."
+	} || {
+		echo "Failed starting MongoDB server!" > /dev/stderr
+		exit 1
+	}
+}
+
+mongo_stop() {
+	kill `cat $PID` && {
+		echo "MongoDB server stopped."
+	} || {
+		echo "Failed to stop MongoDB server" > /dev/stderr
+		exit 1
+	}
+	# rm $PID
+}
+
+mongo_restart() {
+	mongo_stop
+	sleep 2
+	mongo_start
+}
+
+case "$1" in
+	'start')
+		mongo_start
+	;;
+	'stop')
+		mongo_stop
+	;;
+	'restart')
+		mongo_restart
+	;;
+	*)
+	# Default is "start", for backwards compatibility with previous
+	# Slackware versions.  This may change to a 'usage' error someday.
+	mongo_start
+esac
+

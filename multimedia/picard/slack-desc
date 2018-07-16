@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.
+# Line up the first '|' above the ':' following the base package name, and
+# the '|' on the right side marks the last column you can put a character in.
+# You must make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':' except on otherwise blank lines.
+
+      |-----handy-ruler------------------------------------------------------|
+picard: picard (Music Tagger)
+picard:
+picard: MusicBrainz Picard is a cross-platform (Linux/Mac OS X/Windows)
+picard: application written in Python. It supports the majority of audio
+picard: file formats, uses PUID audio fingerprints, performs CD lookups
+picard: and disc ID submissions, and it has excellent Unicode support.
+picard: This application is the official MusicBrainz tagging application.
+picard:
+picard: Homepage: http://musicbrainz.org/doc/Picard_Tagger
+picard:
+picard:

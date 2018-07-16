@@ -1,0 +1,162 @@
+#!/bin/sh
+
+# Slackware build script for eduke32
+
+# Written by B. Watson (yalhcru@gmail.com)
+
+# Licensed under the WTFPL. See http://www.wtfpl.net/txt/copying/ for details.
+
+# 20170128 bkw:
+# - update for 20170123_6052
+# - add new utilities
+# - compilefix.diff no longer needed
+
+# 20160808 bkw:
+# - update for 20160704_5811
+# - install samples/ to the doc dir, not the game data dir
+# - rework wrapper script to let mods like bloodcm be installed
+#   system-wide in /usr/share/games/eduke32
+# - add compilefix.diff to get the tools to build
+# - support SDL2 build, add SDL2=no to force SDL1
+# - use OPTIMIZATIONS instead of ARCH for $SLKCFLAGS, upstream
+#   changed the build a bit
+# - undocumented VPX flag now defaults to "yes", since libvpx is a
+#   core Slackware 14.2 package
+# - slack-desc shows SDL version and whether or not libvpx was used.
+
+PRGNAM=eduke32
+VERSION=${VERSION:-20170123_6052}
+BUILD=${BUILD:-1}
+TAG=${TAG:-_SBo}
+
+CWD=$(pwd)
+TMP=${TMP:-/tmp/SBo}
+PKG=$TMP/package-$PRGNAM
+OUTPUT=${OUTPUT:-/tmp}
+
+if [ -z "$ARCH" ]; then
+  case "$( uname -m )" in
+    i?86) ARCH=i586 ;;
+    arm*) ARCH=arm ;;
+       *) ARCH=$( uname -m ) ;;
+  esac
+fi
+
+if [ "$ARCH" = "i586" ]; then
+  SLKCFLAGS="-O2 -march=i586 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "i686" ]; then
+  SLKCFLAGS="-O2 -march=i686 -mtune=i686"
+  LIBDIRSUFFIX=""
+elif [ "$ARCH" = "x86_64" ]; then
+  SLKCFLAGS="-O2 -fPIC"
+  LIBDIRSUFFIX="64"
+fi
+
+set -e
+
+SRCVER=${VERSION/_/-}
+
+rm -rf $PKG
+mkdir -p $TMP $PKG $OUTPUT
+cd $TMP
+rm -rf ${PRGNAM}_${SRCVER}
+tar xvf $CWD/${PRGNAM}_src_${SRCVER}.tar.xz
+cd ${PRGNAM}_${SRCVER}
+chown -R root:root .
+find -L . \
+ \( -perm 777 -o -perm 775 -o -perm 750 -o -perm 711 -o -perm 555 \
+  -o -perm 511 \) -exec chmod 755 {} \; -o \
+ \( -perm 666 -o -perm 664 -o -perm 640 -o -perm 600 -o -perm 444 \
+ -o -perm 440 -o -perm 400 \) -exec chmod 644 {} \;
+
+# this was always undocumented, defaulted to "no" in Slack <= 14.1.
+# should be safe to default to "yes" now that 14.2 has libvpx.
+if [ "${VPX:-yes}" != "yes" ]; then
+  VPXFLAG="USE_LIBVPX=0"
+else
+  ANDVPX=" and libvpx"
+fi
+
+# On some systems, the game spits out tons of warnings:
+# Error: glGetTexLevelParameteriv returned GL_FALSE!
+# These don't seem to actually hurt anything (the game looks
+# and plays fine), so let's get rid of them to clean up
+# the log output.
+sed -i '/"Error: glGetTexLevelParameteriv/d' build/src/texcache.c
+
+# SDL2 might be preferred for some users. Specifically, those of us
+# who use a left-handed mouse (SDL1 gets the button mappings backwards).
+SDL2=${SDL2:-auto}
+SDL_TARGET=1
+if [ "$SDL2" = "auto" ]; then
+  sdl2-config --version >/dev/null && SDL_TARGET=2
+elif [ "$SDL2" = "yes" ]; then
+  SDL_TARGET=2
+else
+  SDL_TARGET=1
+fi
+
+# Mildly confusing: the Makefile uses ARCH for arch-specific cflags
+make \
+  ARCH="" \
+  OPTIMIZATIONS="$SLKCFLAGS" \
+  SDL_TARGET=$SDL_TARGET \
+  $VPXFLAG
+
+# Build the utilities, if requested.
+if [ "${BUILD_UTILS:-yes}" = "yes" ]; then
+  make utils sdlutils \
+    OPTIMIZATIONS="$SLKCFLAGS" \
+    ARCH="" \
+    $VPXFLAG \
+    SDL_TARGET=$SDL_TARGET \
+
+  for i in kextract kgroup transpal wad2art wad2map kmd2tool \
+           md2tool generateicon cacheinfo arttool givedepth \
+           mkpalette unpackssi map2stl ivfrate makesdlkeytrans
+  do
+    install -s -D -m0755 $i $PKG/usr/games/$i
+  done
+fi
+
+install -D -m0755 $PRGNAM $PKG/usr/libexec/$PRGNAM/$PRGNAM
+install -D -m0755 mapster32 $PKG/usr/libexec/$PRGNAM/mapster32
+
+mkdir -p $PKG/usr/man/man6
+gzip -9c $CWD/$PRGNAM.6 > $PKG/usr/man/man6/$PRGNAM.6.gz
+
+# Wrapper script to make things behave nicer
+install -D -m0755 $CWD/$PRGNAM.wrapper  $PKG/usr/games/$PRGNAM
+( cd $PKG/usr/games ; ln -s $PRGNAM mapster32 )
+
+# Mapster help files
+mkdir -p $PKG/usr/share/games/$PRGNAM
+cd package/sdk
+cp *.hlp *.HLP names.h tiles.cfg $PKG/usr/share/games/$PRGNAM
+cd -
+
+mkdir -p $PKG/usr/share/applications
+cp $CWD/mapster32.desktop $CWD/$PRGNAM.desktop $PKG/usr/share/applications
+
+mkdir -p $PKG/usr/share/pixmaps
+cp $CWD/$PRGNAM.png $PKG/usr/share/pixmaps
+
+mkdir -p $PKG/usr/doc/$PRGNAM-$VERSION
+cp build/doc/* $PKG/usr/doc/$PRGNAM-$VERSION
+cp build/buildlic.txt source/gpl-2.0.txt $CWD/README_game_data.txt \
+  $PKG/usr/doc/$PRGNAM-$VERSION
+cp -r package/sdk/samples $PKG/usr/doc/$PRGNAM-$VERSION
+cat $CWD/$PRGNAM.SlackBuild > $PKG/usr/doc/$PRGNAM-$VERSION/$PRGNAM.SlackBuild
+
+( cd $PKG/usr/share/games/$PRGNAM
+  ln -s ../../../doc/$PRGNAM-$VERSION/README_game_data.txt . )
+
+mkdir -p $PKG/install
+sed -e "s,@SDL_TARGET@,$SDL_TARGET," \
+    -e "s,@ANDVPX@,$ANDVPX," \
+       $CWD/slack-desc > $PKG/install/slack-desc
+cat $CWD/doinst.sh > $PKG/install/doinst.sh
+
+cd $PKG
+/sbin/makepkg -l y -c n $OUTPUT/$PRGNAM-$VERSION-$ARCH-$BUILD$TAG.${PKGTYPE:-tgz}

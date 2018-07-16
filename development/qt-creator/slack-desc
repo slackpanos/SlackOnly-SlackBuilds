@@ -1,0 +1,19 @@
+# HOW TO EDIT THIS FILE:
+# The "handy ruler" below makes it easier to edit a package description.
+# Line up the first '|' above the ':' following the base package name, and
+# the '|' on the right side marks the last column you can put a character in.
+# You must make exactly 11 lines for the formatting to be correct.  It's also
+# customary to leave one space after the ':' except on otherwise blank lines.
+
+          |-----handy-ruler------------------------------------------------------|
+qt-creator: qt-creator (Cross-Platform Qt IDE)
+qt-creator:
+qt-creator: Qt Creator is a cross-platform IDE tailored to the needs of
+qt-creator: Qt developers, but is also perfectly usable for non-Qt C/C++
+qt-creator: projects. Qt Creator focuses on providing features that help
+qt-creator: new Qt users get up and running faster, and also boost the
+qt-creator: productivity of experienced Qt developers.
+qt-creator:
+qt-creator: Homepage: https://wiki.qt.io/Qt_Creator
+qt-creator:
+qt-creator:

@@ -1,0 +1,14 @@
+Pass the genre name instead of the identifier to the id3 command as the
+numbers are offset by one.
+
+--- abcde-2.9.1.orig/abcde	2018-03-10 00:03:50.000000000 +0100
++++ abcde-2.9.1/abcde	2018-05-21 12:32:49.972288507 +0200
+@@ -864,7 +864,7 @@
+ 					run_command "tagtrack-$OUTPUT-$1" nice $ENCNICE \
+ 						$TAGGER $TAGGEROPTS -c "$COMMENTOUTPUT" \
+ 						-A "$DALBUM" -a "$TRACKARTIST" -t "$TRACKNAME" \
+-						-y "$CDYEAR" -g "$GENREID" \
++						-y "$CDYEAR" -g "$CDGENRE" \
+ 						-T "${TRACKNUM:-$1}" \
+ 						"${ABCDETEMPDIR}/track$1.$OUTPUT"
+ 					;;

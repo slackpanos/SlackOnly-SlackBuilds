@@ -1,0 +1,10 @@
+backcall
+python3-Pygments
+python3-decorator
+python3-ipython_genutils
+python3-jedi
+python3-pexpect
+python3-pickleshare
+python3-prompt_toolkit
+python3-simplegeneric
+python3-traitlets

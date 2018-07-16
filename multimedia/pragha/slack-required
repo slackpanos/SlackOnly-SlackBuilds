@@ -1,0 +1,8 @@
+gst-libav
+gst-plugins-bad
+gst-plugins-ugly
+gst-python
+gst0-plugins-bad
+gst0-plugins-ugly
+gst0-python
+libpeas

@@ -1,0 +1,12 @@
+[Desktop Entry]
+Categories=Office;
+Exec=gaiksaurus
+GenericName=Thesaurus
+Icon=/usr/share/icons/gaiksaurus/gaiksaurus.png
+Name=Gaiksaurus
+NoDisplay=false
+StartupNotify=true
+Terminal=false
+Type=Application
+X-KDE-SubstituteUID=false
+X-KDE-Username=

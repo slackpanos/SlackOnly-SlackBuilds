@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=FooBillard++
+GenericName=OpenGL billard game
+Comment=Free OpenGL billard game for Linux
+Exec=foobillardplus
+Icon=foobillardplus
+Terminal=false
+Type=Application
+Categories=Game;

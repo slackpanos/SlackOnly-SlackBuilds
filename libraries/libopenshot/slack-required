@@ -1,0 +1,6 @@
+ffmpeg
+libopenshot-audio
+python3
+qt5
+unittest-cpp
+zeromq
