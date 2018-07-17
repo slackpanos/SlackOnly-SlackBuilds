@@ -28,7 +28,7 @@
 
 
 PRGNAM=spman
-VERSION=${VERSION:-1.5.4}
+VERSION=${VERSION:-2.0.0}
 BUILD=${BUILD:-1}
 TAG=${TAG:-_SBo}
 
@@ -111,10 +111,8 @@ cat $CWD/README > $DOCS/README
 cp -a AUTHORS ChangeLog.txt INSTALL LICENSE README.md requirements.txt $DOCS
 
 # copy the slack-desc and custom doinst.sh into ./install
-cat $CWD/slack-required > $PKG/install/slack-required
 mkdir -p $PKG/install
 cat $CWD/slack-desc > $PKG/install/slack-desc
-cat $CWD/slack-required > $PKG/install/slack-required
 cat $CWD/doinst.sh > $PKG/install/doinst.sh
 
 # make the package

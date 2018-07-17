@@ -1,0 +1,22 @@
+# Files mentioned in this file will be ignored by git
+*.rpm
+*.swp
+*.tar.gz
+*.tar.gz.asc
+*.tar.bz2
+*.tar.xz
+*.tbz2
+*.tgz
+*.txz
+*.zip
+*.gem
+*.7z
+*.lz
+*.pk3
+*.run
+*.Z
+*.deb
+*.jar
+*~
+.directory
+*.phar

@@ -102,7 +102,10 @@ cp $CWD/$PRGNAM.png $PKG/usr/share/pixmaps
 
 mkdir -p $PKG/install
 cat $CWD/slack-desc > $PKG/install/slack-desc
+<<<<<<< HEAD
 cat $CWD/slack-required > $PKG/install/slack-required
+=======
+>>>>>>> 296ae062cf9db17716afa30ab06ad00f1d768fb9
 cat $CWD/doinst.sh > $PKG/install/doinst.sh
 
 cd $PKG
