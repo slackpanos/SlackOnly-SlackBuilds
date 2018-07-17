@@ -1,7 +1,9 @@
 Jinja2
+ipaddress
 jupyter-ipykernel
 jupyter-nbconvert
 jupyter_client
+python-prometheus_client
 send2trash
 singledispatch
 terminado
